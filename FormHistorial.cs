@@ -17,25 +17,79 @@ namespace SistemaBanco
 
         private void InitializeComponent()
         {
-            this.Text = "Historial de Movimientos";
-            this.Size = new System.Drawing.Size(900, 500);
+            this.Text = "Banco Premier - Historial de Movimientos";
+            this.ClientSize = new System.Drawing.Size(1100, 660);
             this.StartPosition = FormStartPosition.CenterScreen;
+            this.BackColor = BankTheme.LightGray;
+            this.FormBorderStyle = FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
 
-            Label lblTitulo = new Label { Text = "HISTORIAL DE MOVIMIENTOS", Location = new System.Drawing.Point(280, 20), Size = new System.Drawing.Size(340, 30), Font = new System.Drawing.Font("Arial", 14, System.Drawing.FontStyle.Bold) };
-            
-            dgvMovimientos = new DataGridView 
-            { 
-                Location = new System.Drawing.Point(20, 60), 
-                Size = new System.Drawing.Size(850, 350),
-                ReadOnly = true,
-                AllowUserToAddRows = false,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect
+            // Header
+            Panel headerPanel = new Panel
+            {
+                Location = new System.Drawing.Point(0, 0),
+                Size = new System.Drawing.Size(1100, 80),
+                BackColor = BankTheme.PrimaryBlue
             };
 
-            Button btnCerrar = new Button { Text = "Cerrar", Location = new System.Drawing.Point(400, 420), Size = new System.Drawing.Size(100, 35) };
+            Label lblTitulo = new Label
+            {
+                Text = "📊 HISTORIAL DE MOVIMIENTOS",
+                Location = new System.Drawing.Point(350, 25),
+                Size = new System.Drawing.Size(400, 30),
+                Font = BankTheme.SubtitleFont,
+                ForeColor = BankTheme.White,
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+            };
+
+            headerPanel.Controls.Add(lblTitulo);
+
+            // Card con DataGridView
+            Panel mainCard = BankTheme.CreateCard(30, 110, 1040, 450);
+
+            dgvMovimientos = new DataGridView
+            {
+                Location = new System.Drawing.Point(10, 10),
+                Size = new System.Drawing.Size(1020, 430),
+                ReadOnly = true,
+                AllowUserToAddRows = false,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                BackgroundColor = BankTheme.White,
+                BorderStyle = BorderStyle.None,
+                ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
+                {
+                    BackColor = BankTheme.PrimaryBlue,
+                    ForeColor = BankTheme.White,
+                    Font = BankTheme.HeaderFont,
+                    Alignment = DataGridViewContentAlignment.MiddleCenter
+                },
+                DefaultCellStyle = new DataGridViewCellStyle
+                {
+                    Font = BankTheme.BodyFont,
+                    SelectionBackColor = BankTheme.SecondaryBlue,
+                    SelectionForeColor = BankTheme.White
+                },
+                AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
+                {
+                    BackColor = BankTheme.LightGray
+                },
+                EnableHeadersVisualStyles = false,
+                RowHeadersVisible = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+            };
+
+            mainCard.Controls.Add(dgvMovimientos);
+
+            Button btnCerrar = new Button
+            {
+                Text = "CERRAR",
+                Location = new System.Drawing.Point(450, 590),
+                Size = new System.Drawing.Size(200, 50)
+            };
+            BankTheme.StyleButton(btnCerrar, false);
             btnCerrar.Click += (s, e) => this.Close();
 
-            this.Controls.AddRange(new Control[] { lblTitulo, dgvMovimientos, btnCerrar });
+            this.Controls.AddRange(new Control[] { headerPanel, mainCard, btnCerrar });
         }
 
         private void CargarMovimientos()
