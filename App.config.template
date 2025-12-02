@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <connectionStrings>
+    <!-- 
+    ============================================
+    INSTRUCCIONES:
+    ============================================
+    1. Copia este archivo y renómbralo a "App.config"
+    2. Reemplaza los valores entre [] con tus datos reales de Supabase
+    3. NO subas este archivo a GitHub con tus credenciales reales
+    
+    Para obtener tus credenciales:
+    - Ve a Supabase Dashboard
+    - Settings → Database
+    - Copia el Host y tu Password
+    ============================================
+    -->
+    
+    <add name="BancoDB" 
+         connectionString="Host=[TU_HOST_SUPABASE];Port=5432;Database=postgres;Username=postgres;Password=[TU_PASSWORD];SSL Mode=Require;Trust Server Certificate=true;" 
+         providerName="Npgsql" />
+  </connectionStrings>
+</configuration>
+
+<!-- 
+EJEMPLO:
+<add name="BancoDB" 
+     connectionString="Host=db.abcdefghijklmnop.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=MiPassword123;SSL Mode=Require;Trust Server Certificate=true;" 
+     providerName="Npgsql" />
+-->

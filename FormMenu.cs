@@ -39,10 +39,20 @@ namespace SistemaBanco
             Label lblBienvenida = new Label
             {
                 Text = $"Bienvenido, {FormLogin.NombreUsuario}",
-                Location = new System.Drawing.Point(650, 30),
+                Location = new System.Drawing.Point(650, 20),
                 Size = new System.Drawing.Size(320, 25),
                 Font = BankTheme.HeaderFont,
                 ForeColor = BankTheme.AccentGold,
+                TextAlign = System.Drawing.ContentAlignment.MiddleRight
+            };
+
+            Label lblRol = new Label
+            {
+                Text = $"Rol: {FormLogin.RolUsuario}",
+                Location = new System.Drawing.Point(650, 45),
+                Size = new System.Drawing.Size(320, 20),
+                Font = BankTheme.BodyFont,
+                ForeColor = BankTheme.White,
                 TextAlign = System.Drawing.ContentAlignment.MiddleRight
             };
 
@@ -56,7 +66,7 @@ namespace SistemaBanco
                 TextAlign = System.Drawing.ContentAlignment.MiddleRight
             };
 
-            headerPanel.Controls.AddRange(new Control[] { lblLogo, lblBienvenida, lblFecha });
+            headerPanel.Controls.AddRange(new Control[] { lblLogo, lblBienvenida, lblRol, lblFecha });
 
             // Panel principal con opciones
             Label lblTitulo = new Label
@@ -69,14 +79,14 @@ namespace SistemaBanco
             };
 
             // Tarjetas de opciones - Primera fila
-            Panel cardSaldo = CreateMenuCard(50, 180, 280, 180, "💰", "Consultar Saldo", "Ver el saldo actual de tu cuenta");
-            Panel cardMovimiento = CreateMenuCard(360, 180, 280, 180, "💳", "Nuevo Movimiento", "Registrar depósitos y retiros");
-            Panel cardTransferencia = CreateMenuCard(670, 180, 280, 180, "🔄", "Transferencias", "Transferir entre cuentas");
+            Panel cardSaldo = CreateMenuCard(50, 180, 280, 180, "💰", "Consultar Saldo", "Ver el saldo actual de tu cuenta", "ConsultarSaldo");
+            Panel cardMovimiento = CreateMenuCard(360, 180, 280, 180, "💳", "Movimientos Financieros", "Registrar cargos y abonos", "RegistrarMovimientos");
+            Panel cardTransferencia = CreateMenuCard(670, 180, 280, 180, "🔄", "Transferencias", "Transferir entre cuentas", "Transferencias");
 
             // Segunda fila
-            Panel cardHistorial = CreateMenuCard(50, 390, 280, 180, "📊", "Historial", "Ver movimientos realizados");
-            Panel cardEstado = CreateMenuCard(360, 390, 280, 180, "📄", "Estado de Cuenta", "Generar reporte detallado");
-            Panel cardPerfil = CreateMenuCard(670, 390, 280, 180, "👤", "Mi Perfil", "Configuración de cuenta");
+            Panel cardHistorial = CreateMenuCard(50, 390, 280, 180, "📊", "Historial", "Ver movimientos realizados", "Historial");
+            Panel cardEstado = CreateMenuCard(360, 390, 280, 180, "📄", "Estado de Cuenta", "Generar reporte detallado", "EstadoCuenta");
+            Panel cardPerfil = CreateMenuCard(670, 390, 280, 180, "👤", "Mi Perfil", "Configuración de cuenta", "ConsultarSaldo");
 
             // Botón cerrar sesión
             Button btnSalir = new Button
@@ -89,9 +99,9 @@ namespace SistemaBanco
 
             // Eventos - Asignar a las tarjetas y sus controles hijos
             AsignarEventoCard(cardSaldo, () => new FormSaldo().ShowDialog());
-            AsignarEventoCard(cardMovimiento, () => new FormMovimiento().ShowDialog());
+            AsignarEventoCard(cardMovimiento, () => new FormMovimientoFinanciero().ShowDialog());
             AsignarEventoCard(cardTransferencia, () => new FormTransferencia().ShowDialog());
-            AsignarEventoCard(cardHistorial, () => new FormHistorial().ShowDialog());
+            AsignarEventoCard(cardHistorial, () => new FormRevisionMovimientos().ShowDialog());
             AsignarEventoCard(cardEstado, () => new FormEstadoCuenta().ShowDialog());
             AsignarEventoCard(cardPerfil, () => MessageBox.Show("Funcionalidad en desarrollo", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information));
             btnSalir.Click += (s, e) => this.Close();
@@ -108,8 +118,23 @@ namespace SistemaBanco
             }
         }
 
-        private Panel CreateMenuCard(int x, int y, int width, int height, string icon, string title, string description)
+        private Panel CreateMenuCard(int x, int y, int width, int height, string icon, string title, string description, string permiso)
         {
+            // Verificar si el usuario tiene permiso
+            bool tienePermiso = RoleManager.TienePermiso(FormLogin.RolUsuario, permiso);
+            
+            // Si no tiene permiso, no mostrar la tarjeta
+            if (!tienePermiso)
+            {
+                Panel emptyCard = new Panel
+                {
+                    Location = new System.Drawing.Point(x, y),
+                    Size = new System.Drawing.Size(width, height),
+                    Visible = false
+                };
+                return emptyCard;
+            }
+
             Panel card = BankTheme.CreateCard(x, y, width, height);
             card.Cursor = Cursors.Hand;
             card.Tag = title; // Guardar el título para identificar la acción

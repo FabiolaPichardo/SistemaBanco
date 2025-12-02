@@ -48,6 +48,9 @@ namespace SistemaBanco
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter
             };
 
+            // Botón de inicio
+            HomeButton.AddToForm(this, headerPanel);
+
             headerPanel.Controls.Add(lblTitulo);
 
             // Panel de filtros

@@ -44,7 +44,7 @@ namespace SistemaBanco
         private void InitializeComponent()
         {
             this.Text = "Módulo Banco - Registro de Usuario";
-            this.ClientSize = new System.Drawing.Size(700, 800);
+            this.ClientSize = new System.Drawing.Size(700, 650);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = BankTheme.LightGray;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -412,7 +412,7 @@ namespace SistemaBanco
             Button btnRegistrar = new Button
             {
                 Text = "CONTINUAR",
-                Location = new System.Drawing.Point(225, 735),
+                Location = new System.Drawing.Point(225, 730),
                 Size = new System.Drawing.Size(250, 45)
             };
             BankTheme.StyleButton(btnRegistrar, true);
@@ -421,7 +421,7 @@ namespace SistemaBanco
             LinkLabel linkLogin = new LinkLabel
             {
                 Text = "¿Ya tienes usuario? Iniciar sesión",
-                Location = new System.Drawing.Point(225, 785),
+                Location = new System.Drawing.Point(225, 780),
                 Size = new System.Drawing.Size(250, 20),
                 Font = BankTheme.SmallFont,
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
@@ -653,13 +653,15 @@ namespace SistemaBanco
                     return;
                 }
 
-                // Insertar nuevo usuario
+                // Insertar nuevo usuario (id_usuario se asigna automáticamente por SERIAL)
                 string queryInsert = @"INSERT INTO usuarios (usuario, contraseña, nombre_completo, email,
                                       pregunta_seguridad_1, respuesta_seguridad_1,
                                       pregunta_seguridad_2, respuesta_seguridad_2,
-                                      pregunta_seguridad_3, respuesta_seguridad_3) 
+                                      pregunta_seguridad_3, respuesta_seguridad_3,
+                                      rol, estatus, intentos_fallidos) 
                                       VALUES (@user, @pass, @nombre, @email,
-                                      @preg1, @resp1, @preg2, @resp2, @preg3, @resp3) 
+                                      @preg1, @resp1, @preg2, @resp2, @preg3, @resp3,
+                                      @rol, TRUE, 0) 
                                       RETURNING id_usuario";
 
                 DataTable dtResult = Database.ExecuteQuery(queryInsert,
@@ -672,20 +674,21 @@ namespace SistemaBanco
                     new NpgsqlParameter("@preg2", cmbPregunta2.SelectedItem.ToString()),
                     new NpgsqlParameter("@resp2", txtRespuesta2.Text.Trim().ToLower()),
                     new NpgsqlParameter("@preg3", cmbPregunta3.SelectedItem.ToString()),
-                    new NpgsqlParameter("@resp3", txtRespuesta3.Text.Trim().ToLower()));
+                    new NpgsqlParameter("@resp3", txtRespuesta3.Text.Trim().ToLower()),
+                    new NpgsqlParameter("@rol", cmbRol.SelectedItem.ToString()));
 
                 int idUsuario = Convert.ToInt32(dtResult.Rows[0][0]);
 
-                // Crear cuenta bancaria automaticamente
+                // Crear cuenta bancaria automaticamente con ID único
                 string numeroCuenta = "100" + DateTime.Now.ToString("yyyyMMddHHmmss");
-                string queryAccount = @"INSERT INTO cuentas (id_usuario, numero_cuenta, tipo_cuenta, saldo) 
-                                       VALUES (@id, @numero, 'AHORRO', 0.00)";
+                string queryAccount = @"INSERT INTO cuentas (id_usuario, numero_cuenta, tipo_cuenta, saldo, estatus) 
+                                       VALUES (@id, @numero, 'AHORRO', 0.00, TRUE)";
                 Database.ExecuteNonQuery(queryAccount,
                     new NpgsqlParameter("@id", idUsuario),
                     new NpgsqlParameter("@numero", numeroCuenta));
 
                 CustomMessageBox.Show("Registrado correctamente",
-                    $"Su cuenta ha sido creada exitosamente.\n\nUsuario: {usuario}\nNumero de cuenta: {numeroCuenta}\n\nYa puede iniciar sesion con sus credenciales.",
+                    $"Su cuenta ha sido creada exitosamente.\n\nUsuario: {usuario}\nID Usuario: {idUsuario}\nNumero de cuenta: {numeroCuenta}\n\nYa puede iniciar sesion con sus credenciales.",
                     MessageBoxIcon.Information);
 
                 this.Close();

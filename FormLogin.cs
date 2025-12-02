@@ -10,6 +10,7 @@ namespace SistemaBanco
         public static int IdUsuarioActual;
         public static string NombreUsuario;
         public static int IdCuentaActual;
+        public static string RolUsuario;
 
         public FormLogin()
         {
@@ -264,7 +265,7 @@ namespace SistemaBanco
                 try
                 {
                     // Verificar si el usuario existe
-                    string queryUsuario = "SELECT id_usuario, contraseña, nombre_completo, estatus, bloqueado_hasta, intentos_fallidos FROM usuarios WHERE usuario = @user";
+                    string queryUsuario = "SELECT id_usuario, contraseña, nombre_completo, estatus, bloqueado_hasta, intentos_fallidos, rol FROM usuarios WHERE usuario = @user";
                     DataTable dtUsuario = Database.ExecuteQuery(queryUsuario, new NpgsqlParameter("@user", usuario));
 
                     if (dtUsuario.Rows.Count == 0)
@@ -281,6 +282,20 @@ namespace SistemaBanco
                     bool estatus = Convert.ToBoolean(dtUsuario.Rows[0]["estatus"]);
                     int intentosFallidos = Convert.ToInt32(dtUsuario.Rows[0]["intentos_fallidos"]);
                     object bloqueadoHasta = dtUsuario.Rows[0]["bloqueado_hasta"];
+                    
+                    // Leer rol de forma segura (puede no existir la columna)
+                    string rol = "Cliente";
+                    try
+                    {
+                        if (dtUsuario.Columns.Contains("rol") && dtUsuario.Rows[0]["rol"] != DBNull.Value)
+                        {
+                            rol = dtUsuario.Rows[0]["rol"].ToString();
+                        }
+                    }
+                    catch
+                    {
+                        rol = "Cliente"; // Valor por defecto si hay error
+                    }
 
                     // Verificar si está bloqueado
                     if (bloqueadoHasta != DBNull.Value)
@@ -366,6 +381,7 @@ namespace SistemaBanco
 
                     IdUsuarioActual = idUsuario;
                     NombreUsuario = nombreCompleto;
+                    RolUsuario = rol;
 
                     // Obtener cuenta del usuario
                     string queryCuenta = "SELECT id_cuenta FROM cuentas WHERE id_usuario = @id";
