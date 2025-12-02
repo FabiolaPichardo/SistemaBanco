@@ -18,11 +18,16 @@ namespace SistemaBanco
 
         private CheckBox chkMostrarPassword;
         private Button btnLogin;
+        private Panel timerPanel;
+        private Label lblTimerMessage;
+        private Label lblTimer;
+        private System.Windows.Forms.Timer countdownTimer;
+        private DateTime tiempoDesbloqueo;
 
         private void InitializeComponent()
         {
-            this.Text = "Módulo de Banco - Banco Premier";
-            this.ClientSize = new System.Drawing.Size(500, 700);
+            this.Text = "Módulo de Banco";
+            this.ClientSize = new System.Drawing.Size(700, 700);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
@@ -32,14 +37,14 @@ namespace SistemaBanco
             Panel headerPanel = new Panel
             {
                 Location = new System.Drawing.Point(0, 0),
-                Size = new System.Drawing.Size(500, 150),
+                Size = new System.Drawing.Size(700, 150),
                 BackColor = BankTheme.PrimaryBlue
             };
 
             Label lblLogo = new Label
             {
                 Text = "🏦",
-                Location = new System.Drawing.Point(210, 20),
+                Location = new System.Drawing.Point(310, 20),
                 Size = new System.Drawing.Size(80, 60),
                 Font = new System.Drawing.Font("Segoe UI", 48F),
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter
@@ -47,8 +52,8 @@ namespace SistemaBanco
 
             Label lblTitulo = new Label
             {
-                Text = "BANCO PREMIER",
-                Location = new System.Drawing.Point(100, 85),
+                Text = "MÓDULO BANCO",
+                Location = new System.Drawing.Point(200, 85),
                 Size = new System.Drawing.Size(300, 35),
                 Font = BankTheme.TitleFont,
                 ForeColor = BankTheme.White,
@@ -58,7 +63,7 @@ namespace SistemaBanco
             Label lblSubtitulo = new Label
             {
                 Text = "Banca Digital Segura",
-                Location = new System.Drawing.Point(100, 115),
+                Location = new System.Drawing.Point(200, 115),
                 Size = new System.Drawing.Size(300, 25),
                 Font = BankTheme.BodyFont,
                 ForeColor = BankTheme.AccentGold,
@@ -68,7 +73,7 @@ namespace SistemaBanco
             headerPanel.Controls.AddRange(new Control[] { lblLogo, lblTitulo, lblSubtitulo });
 
             // Panel de login (card)
-            Panel loginCard = BankTheme.CreateCard(50, 180, 400, 430);
+            Panel loginCard = BankTheme.CreateCard(150, 180, 400, 430);
 
             Label lblLoginTitle = new Label
             {
@@ -81,7 +86,7 @@ namespace SistemaBanco
 
             Label lblLoginSubtitle = new Label
             {
-                Text = "Accede a tu cuenta de Banco",
+                Text = "Accede a tu cuenta bancaria",
                 Location = new System.Drawing.Point(100, 50),
                 Size = new System.Drawing.Size(200, 20),
                 Font = BankTheme.SmallFont,
@@ -171,8 +176,8 @@ namespace SistemaBanco
             LinkLabel linkRecuperar = new LinkLabel
             {
                 Text = "¿Olvidaste tu contraseña?",
-                Location = new System.Drawing.Point(220, 230),
-                Size = new System.Drawing.Size(140, 20),
+                Location = new System.Drawing.Point(200, 230),
+                Size = new System.Drawing.Size(160, 20),
                 Font = BankTheme.SmallFont,
                 TextAlign = System.Drawing.ContentAlignment.MiddleRight,
                 LinkColor = BankTheme.PrimaryBlue
@@ -207,7 +212,7 @@ namespace SistemaBanco
 
             Button btnSalir = new Button
             {
-                Text = "Salir",
+                Text = "SALIR",
                 Location = new System.Drawing.Point(40, 375),
                 Size = new System.Drawing.Size(320, 35),
                 BackColor = System.Drawing.Color.FromArgb(100, 100, 100),
@@ -227,8 +232,8 @@ namespace SistemaBanco
             // Footer
             Label lblFooter = new Label
             {
-                Text = "© 2025 Banco Premier. Todos los derechos reservados.",
-                Location = new System.Drawing.Point(50, 550),
+                Text = "© 2025 Módulo Banco",
+                Location = new System.Drawing.Point(150, 650),
                 Size = new System.Drawing.Size(400, 30),
                 Font = BankTheme.SmallFont,
                 ForeColor = BankTheme.TextSecondary,
@@ -252,7 +257,7 @@ namespace SistemaBanco
 
                 if (string.IsNullOrEmpty(usuario) || string.IsNullOrEmpty(password))
                 {
-                    MessageBox.Show("Ingrese usuario y contraseña", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    CustomMessageBox.Show("Error", "Ingrese usuario y contraseña", MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -264,7 +269,9 @@ namespace SistemaBanco
 
                     if (dtUsuario.Rows.Count == 0)
                     {
-                        MessageBox.Show("Usuario no encontrado", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        CustomMessageBox.Show("Error de Autenticación", 
+                            "Contraseña o nombre de usuario incorrecto.", 
+                            MessageBoxIcon.Error);
                         return;
                     }
 
@@ -281,9 +288,16 @@ namespace SistemaBanco
                         DateTime fechaBloqueo = Convert.ToDateTime(bloqueadoHasta);
                         if (DateTime.Now < fechaBloqueo)
                         {
+                            // Mostrar timer
+                            tiempoDesbloqueo = fechaBloqueo;
+                            timerPanel.Visible = true;
+                            btnLogin.Enabled = false;
+                            countdownTimer.Start();
+                            
                             TimeSpan tiempoRestante = fechaBloqueo - DateTime.Now;
-                            MessageBox.Show($"Cuenta bloqueada temporalmente.\nIntente nuevamente en {tiempoRestante.Minutes} minutos.",
-                                "Cuenta Bloqueada", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            CustomMessageBox.Show("Cuenta Bloqueada", 
+                                $"Cuenta bloqueada temporalmente tras 3 intentos fallidos.\n\nTiempo restante: {tiempoRestante.Minutes} minutos y {tiempoRestante.Seconds} segundos.", 
+                                MessageBoxIcon.Warning);
                             return;
                         }
                         else
@@ -292,13 +306,17 @@ namespace SistemaBanco
                             Database.ExecuteNonQuery("UPDATE usuarios SET bloqueado_hasta = NULL, intentos_fallidos = 0 WHERE id_usuario = @id",
                                 new NpgsqlParameter("@id", idUsuario));
                             intentosFallidos = 0;
+                            timerPanel.Visible = false;
+                            countdownTimer.Stop();
                         }
                     }
 
                     // Verificar si está activo
                     if (!estatus)
                     {
-                        MessageBox.Show("Cuenta desactivada. Contacte al administrador.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        CustomMessageBox.Show("Cuenta Desactivada", 
+                            "Su cuenta ha sido desactivada. Contacte al administrador.", 
+                            MessageBoxIcon.Error);
                         return;
                     }
 
@@ -309,16 +327,23 @@ namespace SistemaBanco
                         
                         if (intentosFallidos >= 3)
                         {
-                            // Bloquear cuenta por 15 minutos
-                            DateTime bloqueadoHastaFecha = DateTime.Now.AddMinutes(15);
+                            // Bloquear cuenta por 30 minutos (BAN-3)
+                            DateTime bloqueadoHastaFecha = DateTime.Now.AddMinutes(30);
                             Database.ExecuteNonQuery(@"UPDATE usuarios SET intentos_fallidos = @intentos, bloqueado_hasta = @hasta 
                                                       WHERE id_usuario = @id",
                                 new NpgsqlParameter("@intentos", intentosFallidos),
                                 new NpgsqlParameter("@hasta", bloqueadoHastaFecha),
                                 new NpgsqlParameter("@id", idUsuario));
 
-                            MessageBox.Show("Demasiados intentos fallidos.\nSu cuenta ha sido bloqueada por 15 minutos.",
-                                "Cuenta Bloqueada", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            // Mostrar timer
+                            tiempoDesbloqueo = bloqueadoHastaFecha;
+                            timerPanel.Visible = true;
+                            btnLogin.Enabled = false;
+                            countdownTimer.Start();
+
+                            CustomMessageBox.Show("Cuenta Bloqueada", 
+                                "Cuenta bloqueada tras 3 intentos fallidos.\n\nSu cuenta ha sido bloqueada temporalmente por 30 minutos para proteger su seguridad.", 
+                                MessageBoxIcon.Warning);
                         }
                         else
                         {
@@ -326,8 +351,9 @@ namespace SistemaBanco
                                 new NpgsqlParameter("@intentos", intentosFallidos),
                                 new NpgsqlParameter("@id", idUsuario));
 
-                            MessageBox.Show($"Contraseña incorrecta\n\nIntentos restantes: {3 - intentosFallidos}",
-                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            CustomMessageBox.Show("Error de Autenticación", 
+                                $"Contraseña o nombre de usuario incorrecto.\n\nIntentos restantes: {3 - intentosFallidos}", 
+                                MessageBoxIcon.Error);
                         }
                         return;
                     }
@@ -361,13 +387,83 @@ namespace SistemaBanco
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    CustomMessageBox.Show("Error del Sistema", 
+                        "Ha ocurrido un error: " + ex.Message, 
+                        MessageBoxIcon.Error);
                 }
             };
 
             btnSalir.Click += (s, e) => Application.Exit();
 
-            this.Controls.AddRange(new Control[] { headerPanel, loginCard, lblFooter });
+            // Panel de Timer (inicialmente oculto) - Centrado debajo del login
+            timerPanel = new Panel
+            {
+                Location = new System.Drawing.Point(250, 630),
+                Size = new System.Drawing.Size(200, 150),
+                BackColor = System.Drawing.Color.FromArgb(255, 243, 205),
+                BorderStyle = BorderStyle.FixedSingle,
+                Visible = false
+            };
+
+            Label lblTimerTitle = new Label
+            {
+                Text = "⏱️ Cuenta Bloqueada",
+                Location = new System.Drawing.Point(10, 10),
+                Size = new System.Drawing.Size(180, 25),
+                Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold),
+                ForeColor = System.Drawing.Color.FromArgb(133, 100, 4),
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+            };
+
+            lblTimerMessage = new Label
+            {
+                Text = "Próximo intento en:",
+                Location = new System.Drawing.Point(10, 45),
+                Size = new System.Drawing.Size(180, 20),
+                Font = BankTheme.BodyFont,
+                ForeColor = System.Drawing.Color.FromArgb(133, 100, 4),
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+            };
+
+            lblTimer = new Label
+            {
+                Text = "00:00",
+                Location = new System.Drawing.Point(10, 70),
+                Size = new System.Drawing.Size(180, 50),
+                Font = new System.Drawing.Font("Segoe UI", 28F, System.Drawing.FontStyle.Bold),
+                ForeColor = BankTheme.Danger,
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+            };
+
+            timerPanel.Controls.AddRange(new Control[] { lblTimerTitle, lblTimerMessage, lblTimer });
+
+            // Timer para cuenta regresiva
+            countdownTimer = new System.Windows.Forms.Timer();
+            countdownTimer.Interval = 1000; // 1 segundo
+            countdownTimer.Tick += CountdownTimer_Tick;
+
+            this.Controls.AddRange(new Control[] { headerPanel, loginCard, lblFooter, timerPanel });
+        }
+
+        private void CountdownTimer_Tick(object sender, EventArgs e)
+        {
+            TimeSpan tiempoRestante = tiempoDesbloqueo - DateTime.Now;
+
+            if (tiempoRestante.TotalSeconds <= 0)
+            {
+                // Tiempo terminado
+                countdownTimer.Stop();
+                timerPanel.Visible = false;
+                btnLogin.Enabled = true;
+                CustomMessageBox.Show("Cuenta Desbloqueada", 
+                    "Ya puedes intentar iniciar sesión nuevamente.", 
+                    MessageBoxIcon.Information);
+            }
+            else
+            {
+                // Actualizar timer
+                lblTimer.Text = $"{tiempoRestante.Minutes:D2}:{tiempoRestante.Seconds:D2}";
+            }
         }
 
         private void ValidarCampos(TextBox txtUsuario, TextBox txtPassword, Button btnLogin)

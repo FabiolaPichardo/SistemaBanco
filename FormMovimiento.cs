@@ -18,7 +18,7 @@ namespace SistemaBanco
 
         private void InitializeComponent()
         {
-            this.Text = "Banco Premier - Registrar Movimiento";
+            this.Text = "Módulo Banco - Registrar Movimiento";
             this.ClientSize = new System.Drawing.Size(600, 560);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = BankTheme.LightGray;

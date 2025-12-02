@@ -19,7 +19,7 @@ namespace SistemaBanco
 
         private void InitializeComponent()
         {
-            this.Text = "Banco Premier - Transferencia";
+            this.Text = "Módulo Banco - Transferencia";
             this.ClientSize = new System.Drawing.Size(600, 630);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = BankTheme.LightGray;

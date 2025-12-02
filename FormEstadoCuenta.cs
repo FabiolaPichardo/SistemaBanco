@@ -23,7 +23,7 @@ namespace SistemaBanco
 
         private void InitializeComponent()
         {
-            this.Text = "Banco Premier - Estado de Cuenta";
+            this.Text = "Módulo Banco - Estado de Cuenta";
             this.ClientSize = new System.Drawing.Size(1100, 760);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = BankTheme.LightGray;

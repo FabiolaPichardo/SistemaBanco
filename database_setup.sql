@@ -22,6 +22,12 @@ CREATE TABLE usuarios (
     nombre_completo VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     telefono VARCHAR(20),
+    pregunta_seguridad_1 TEXT,
+    respuesta_seguridad_1 TEXT,
+    pregunta_seguridad_2 TEXT,
+    respuesta_seguridad_2 TEXT,
+    pregunta_seguridad_3 TEXT,
+    respuesta_seguridad_3 TEXT,
     estatus BOOLEAN DEFAULT TRUE,
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ultima_sesion TIMESTAMP,
@@ -99,12 +105,30 @@ CREATE INDEX idx_movimientos_tipo ON movimientos(tipo);
 -- ============================================
 
 -- Usuarios de prueba (contraseñas en texto plano para desarrollo - en producción usar bcrypt)
-INSERT INTO usuarios (usuario, contraseña, nombre_completo, email, telefono) VALUES
-('admin', 'Admin123!', 'Administrador del Sistema', 'admin@bancopremier.com', '555-0001'),
-('jperez', 'Pass123!', 'Juan Pérez García', 'jperez@email.com', '555-1234'),
-('mlopez', 'Pass123!', 'María López Hernández', 'mlopez@email.com', '555-5678'),
-('cgarcia', 'Pass123!', 'Carlos García Martínez', 'cgarcia@email.com', '555-9012'),
-('arodriguez', 'Pass123!', 'Ana Rodríguez Sánchez', 'arodriguez@email.com', '555-3456');
+INSERT INTO usuarios (usuario, contraseña, nombre_completo, email, telefono, 
+                     pregunta_seguridad_1, respuesta_seguridad_1,
+                     pregunta_seguridad_2, respuesta_seguridad_2,
+                     pregunta_seguridad_3, respuesta_seguridad_3) VALUES
+('admin', 'Admin123!', 'Administrador del Sistema', 'admin@bancopremier.com', '555-0001',
+ '¿Cuál es el nombre de tu primera mascota?', 'firulais',
+ '¿En qué ciudad naciste?', 'mexico',
+ '¿Cuál es tu color favorito?', 'azul'),
+('jperez', 'Pass123!', 'Juan Pérez García', 'jperez@email.com', '555-1234',
+ '¿Cuál es el nombre de tu primera mascota?', 'max',
+ '¿En qué ciudad naciste?', 'guadalajara',
+ '¿Cuál es tu color favorito?', 'verde'),
+('mlopez', 'Pass123!', 'María López Hernández', 'mlopez@email.com', '555-5678',
+ '¿Cuál es el nombre de tu primera mascota?', 'luna',
+ '¿En qué ciudad naciste?', 'monterrey',
+ '¿Cuál es tu color favorito?', 'rosa'),
+('cgarcia', 'Pass123!', 'Carlos García Martínez', 'cgarcia@email.com', '555-9012',
+ '¿Cuál es el nombre de tu primera mascota?', 'rocky',
+ '¿En qué ciudad naciste?', 'puebla',
+ '¿Cuál es tu color favorito?', 'negro'),
+('arodriguez', 'Pass123!', 'Ana Rodríguez Sánchez', 'arodriguez@email.com', '555-3456',
+ '¿Cuál es el nombre de tu primera mascota?', 'mimi',
+ '¿En qué ciudad naciste?', 'queretaro',
+ '¿Cuál es tu color favorito?', 'morado');
 
 -- Cuentas de prueba
 INSERT INTO cuentas (id_usuario, numero_cuenta, tipo_cuenta, saldo, limite_retiro_diario) VALUES

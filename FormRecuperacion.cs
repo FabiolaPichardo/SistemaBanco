@@ -8,16 +8,24 @@ namespace SistemaBanco
 {
     public partial class FormRecuperacion : Form
     {
-        private TextBox txtEmailUsuario;
+        private TextBox txtUsuario;
         private Panel panelStep1;
         private Panel panelStep2;
-        private TextBox txtToken;
+        private TextBox txtRespuesta1;
+        private TextBox txtRespuesta2;
+        private TextBox txtRespuesta3;
+        private Label lblPregunta1;
+        private Label lblPregunta2;
+        private Label lblPregunta3;
         private TextBox txtNuevaPassword;
         private TextBox txtConfirmPassword;
         private CheckBox chkMostrarPassword;
-        private Label lblPasswordStrength;
-        private string tokenGenerado;
         private int idUsuarioRecuperacion;
+        private string respuestaCorrecta1 = "";
+        private string respuestaCorrecta2 = "";
+        private string respuestaCorrecta3 = "";
+        private string emailUsuario = "";
+        private string nombreUsuario = "";
 
         public FormRecuperacion()
         {
@@ -26,8 +34,8 @@ namespace SistemaBanco
 
         private void InitializeComponent()
         {
-            this.Text = "Banco Premier - Recuperación de Contraseña";
-            this.ClientSize = new System.Drawing.Size(600, 600);
+            this.Text = "Módulo Banco - Recuperación de Contraseña";
+            this.ClientSize = new System.Drawing.Size(700, 700);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = BankTheme.LightGray;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -37,14 +45,14 @@ namespace SistemaBanco
             Panel headerPanel = new Panel
             {
                 Location = new System.Drawing.Point(0, 0),
-                Size = new System.Drawing.Size(600, 100),
+                Size = new System.Drawing.Size(700, 100),
                 BackColor = BankTheme.PrimaryBlue
             };
 
             Label lblLogo = new Label
             {
                 Text = "🔐",
-                Location = new System.Drawing.Point(260, 10),
+                Location = new System.Drawing.Point(310, 10),
                 Size = new System.Drawing.Size(80, 40),
                 Font = new System.Drawing.Font("Segoe UI", 32F),
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter
@@ -52,8 +60,8 @@ namespace SistemaBanco
 
             Label lblTitulo = new Label
             {
-                Text = "Recuperación de Contraseña",
-                Location = new System.Drawing.Point(150, 55),
+                Text = "MÓDULO BANCO",
+                Location = new System.Drawing.Point(200, 55),
                 Size = new System.Drawing.Size(300, 20),
                 Font = BankTheme.HeaderFont,
                 ForeColor = BankTheme.White,
@@ -62,137 +70,195 @@ namespace SistemaBanco
 
             Label lblSubtitulo = new Label
             {
-                Text = "Recupera el acceso a tu cuenta",
-                Location = new System.Drawing.Point(150, 75),
+                Text = "Recuperación de Contraseña",
+                Location = new System.Drawing.Point(200, 75),
                 Size = new System.Drawing.Size(300, 20),
                 Font = BankTheme.SmallFont,
                 ForeColor = BankTheme.AccentGold,
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter
             };
 
-            headerPanel.Controls.AddRange(new Control[] { lblLogo, lblTitulo, lblSubtitulo });
+            // Botón Regresar (flecha)
+            Button btnRegresar = new Button
+            {
+                Text = "←",
+                Location = new System.Drawing.Point(10, 10),
+                Size = new System.Drawing.Size(50, 50),
+                Font = new System.Drawing.Font("Segoe UI", 24F),
+                BackColor = BankTheme.PrimaryBlue,
+                ForeColor = BankTheme.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            btnRegresar.FlatAppearance.BorderSize = 0;
+            btnRegresar.Click += (s, e) => this.Close();
 
-            // Panel Paso 1: Solicitar email
-            panelStep1 = BankTheme.CreateCard(50, 120, 500, 300);
+            headerPanel.Controls.AddRange(new Control[] { btnRegresar, lblLogo, lblTitulo, lblSubtitulo });
+
+            // Panel Paso 1: Identificación y preguntas de seguridad
+            panelStep1 = BankTheme.CreateCard(50, 120, 600, 500);
             panelStep1.Visible = true;
 
             Label lblStep1Title = new Label
             {
                 Text = "Paso 1: Verificación de Identidad",
-                Location = new System.Drawing.Point(100, 20),
+                Location = new System.Drawing.Point(150, 20),
                 Size = new System.Drawing.Size(300, 25),
+                Font = BankTheme.SubtitleFont,
+                ForeColor = BankTheme.PrimaryBlue
+            };
+
+            Label lblUsuario = new Label
+            {
+                Text = "Nombre de Usuario",
+                Location = new System.Drawing.Point(40, 60),
+                Size = new System.Drawing.Size(520, 20),
+                Font = BankTheme.BodyFont,
+                ForeColor = BankTheme.TextSecondary
+            };
+
+            txtUsuario = new TextBox
+            {
+                Location = new System.Drawing.Point(40, 85),
+                Size = new System.Drawing.Size(520, 30),
+                Font = new System.Drawing.Font("Segoe UI", 11F)
+            };
+            BankTheme.StyleTextBox(txtUsuario);
+            txtUsuario.Leave += TxtUsuario_Leave;
+
+            // Preguntas de seguridad (inicialmente ocultas)
+            Label lblPreguntasTitle = new Label
+            {
+                Text = "Preguntas de Seguridad",
+                Location = new System.Drawing.Point(40, 130),
+                Size = new System.Drawing.Size(520, 25),
+                Font = BankTheme.SubtitleFont,
+                ForeColor = BankTheme.PrimaryBlue,
+                Visible = false
+            };
+
+            lblPregunta1 = new Label
+            {
+                Location = new System.Drawing.Point(40, 170),
+                Size = new System.Drawing.Size(520, 20),
+                Font = BankTheme.BodyFont,
+                ForeColor = BankTheme.TextSecondary,
+                Visible = false
+            };
+
+            txtRespuesta1 = new TextBox
+            {
+                Location = new System.Drawing.Point(40, 195),
+                Size = new System.Drawing.Size(520, 30),
+                Font = new System.Drawing.Font("Segoe UI", 11F),
+                Visible = false
+            };
+            BankTheme.StyleTextBox(txtRespuesta1);
+
+            lblPregunta2 = new Label
+            {
+                Location = new System.Drawing.Point(40, 240),
+                Size = new System.Drawing.Size(520, 20),
+                Font = BankTheme.BodyFont,
+                ForeColor = BankTheme.TextSecondary,
+                Visible = false
+            };
+
+            txtRespuesta2 = new TextBox
+            {
+                Location = new System.Drawing.Point(40, 265),
+                Size = new System.Drawing.Size(520, 30),
+                Font = new System.Drawing.Font("Segoe UI", 11F),
+                Visible = false
+            };
+            BankTheme.StyleTextBox(txtRespuesta2);
+
+            lblPregunta3 = new Label
+            {
+                Location = new System.Drawing.Point(40, 310),
+                Size = new System.Drawing.Size(520, 20),
+                Font = BankTheme.BodyFont,
+                ForeColor = BankTheme.TextSecondary,
+                Visible = false
+            };
+
+            txtRespuesta3 = new TextBox
+            {
+                Location = new System.Drawing.Point(40, 335),
+                Size = new System.Drawing.Size(520, 30),
+                Font = new System.Drawing.Font("Segoe UI", 11F),
+                Visible = false
+            };
+            BankTheme.StyleTextBox(txtRespuesta3);
+
+            Button btnContinuarStep1 = new Button
+            {
+                Text = "CONTINUAR",
+                Location = new System.Drawing.Point(200, 420),
+                Size = new System.Drawing.Size(200, 45)
+            };
+            BankTheme.StyleButton(btnContinuarStep1, true);
+            btnContinuarStep1.Click += BtnContinuarStep1_Click;
+
+            panelStep1.Controls.AddRange(new Control[] {
+                lblStep1Title, lblUsuario, txtUsuario, lblPreguntasTitle,
+                lblPregunta1, txtRespuesta1, lblPregunta2, txtRespuesta2,
+                lblPregunta3, txtRespuesta3, btnContinuarStep1
+            });
+
+            // Panel Paso 2: Restablecimiento de contraseña
+            panelStep2 = BankTheme.CreateCard(50, 120, 600, 450);
+            panelStep2.Visible = false;
+
+            Label lblStep2Title = new Label
+            {
+                Text = "Paso 2: Restablecimiento de Contraseña",
+                Location = new System.Drawing.Point(120, 20),
+                Size = new System.Drawing.Size(360, 25),
                 Font = BankTheme.SubtitleFont,
                 ForeColor = BankTheme.PrimaryBlue
             };
 
             Label lblInstrucciones = new Label
             {
-                Text = "Ingresa tu correo electrónico o nombre de usuario.\nTe enviaremos un código de verificación.",
+                Text = "La contraseña debe tener entre 8 y 20 caracteres,\nincluyendo letras mayúsculas, minúsculas, números y símbolos.",
                 Location = new System.Drawing.Point(40, 60),
-                Size = new System.Drawing.Size(420, 40),
-                Font = BankTheme.BodyFont,
+                Size = new System.Drawing.Size(520, 40),
+                Font = BankTheme.SmallFont,
                 ForeColor = BankTheme.TextSecondary
             };
-
-            Label lblEmail = new Label
-            {
-                Text = "Correo Electrónico o Usuario",
-                Location = new System.Drawing.Point(40, 120),
-                Size = new System.Drawing.Size(420, 20),
-                Font = BankTheme.BodyFont,
-                ForeColor = BankTheme.TextSecondary
-            };
-
-            txtEmailUsuario = new TextBox
-            {
-                Location = new System.Drawing.Point(40, 145),
-                Size = new System.Drawing.Size(420, 30),
-                Font = new System.Drawing.Font("Segoe UI", 11F)
-            };
-            BankTheme.StyleTextBox(txtEmailUsuario);
-
-            Button btnEnviarCodigo = new Button
-            {
-                Text = "ENVIAR CÓDIGO",
-                Location = new System.Drawing.Point(150, 200),
-                Size = new System.Drawing.Size(200, 45)
-            };
-            BankTheme.StyleButton(btnEnviarCodigo, true);
-            btnEnviarCodigo.Click += BtnEnviarCodigo_Click;
-
-            panelStep1.Controls.AddRange(new Control[] { lblStep1Title, lblInstrucciones, lblEmail, txtEmailUsuario, btnEnviarCodigo });
-
-            // Panel Paso 2: Ingresar código y nueva contraseña
-            panelStep2 = BankTheme.CreateCard(50, 120, 500, 450);
-            panelStep2.Visible = false;
-
-            Label lblStep2Title = new Label
-            {
-                Text = "Paso 2: Nueva Contraseña",
-                Location = new System.Drawing.Point(130, 20),
-                Size = new System.Drawing.Size(240, 25),
-                Font = BankTheme.SubtitleFont,
-                ForeColor = BankTheme.PrimaryBlue
-            };
-
-            Label lblToken = new Label
-            {
-                Text = "Código de Verificación (enviado por email)",
-                Location = new System.Drawing.Point(40, 60),
-                Size = new System.Drawing.Size(420, 20),
-                Font = BankTheme.BodyFont,
-                ForeColor = BankTheme.TextSecondary
-            };
-
-            txtToken = new TextBox
-            {
-                Location = new System.Drawing.Point(40, 85),
-                Size = new System.Drawing.Size(420, 30),
-                Font = new System.Drawing.Font("Segoe UI", 11F),
-                MaxLength = 6
-            };
-            BankTheme.StyleTextBox(txtToken);
 
             Label lblNuevaPassword = new Label
             {
                 Text = "Nueva Contraseña",
-                Location = new System.Drawing.Point(40, 135),
-                Size = new System.Drawing.Size(420, 20),
+                Location = new System.Drawing.Point(40, 120),
+                Size = new System.Drawing.Size(520, 20),
                 Font = BankTheme.BodyFont,
                 ForeColor = BankTheme.TextSecondary
             };
 
             txtNuevaPassword = new TextBox
             {
-                Location = new System.Drawing.Point(40, 160),
-                Size = new System.Drawing.Size(420, 30),
+                Location = new System.Drawing.Point(40, 145),
+                Size = new System.Drawing.Size(520, 30),
                 Font = new System.Drawing.Font("Segoe UI", 11F),
                 UseSystemPasswordChar = true
             };
             BankTheme.StyleTextBox(txtNuevaPassword);
-            txtNuevaPassword.TextChanged += TxtNuevaPassword_TextChanged;
-
-            lblPasswordStrength = new Label
-            {
-                Location = new System.Drawing.Point(40, 193),
-                Size = new System.Drawing.Size(420, 15),
-                Font = BankTheme.SmallFont,
-                ForeColor = BankTheme.TextSecondary
-            };
 
             Label lblConfirmPassword = new Label
             {
                 Text = "Confirmar Nueva Contraseña",
-                Location = new System.Drawing.Point(40, 215),
-                Size = new System.Drawing.Size(420, 20),
+                Location = new System.Drawing.Point(40, 195),
+                Size = new System.Drawing.Size(520, 20),
                 Font = BankTheme.BodyFont,
                 ForeColor = BankTheme.TextSecondary
             };
 
             txtConfirmPassword = new TextBox
             {
-                Location = new System.Drawing.Point(40, 240),
-                Size = new System.Drawing.Size(420, 30),
+                Location = new System.Drawing.Point(40, 220),
+                Size = new System.Drawing.Size(520, 30),
                 Font = new System.Drawing.Font("Segoe UI", 11F),
                 UseSystemPasswordChar = true
             };
@@ -201,7 +267,7 @@ namespace SistemaBanco
             chkMostrarPassword = new CheckBox
             {
                 Text = "Mostrar contraseñas",
-                Location = new System.Drawing.Point(40, 280),
+                Location = new System.Drawing.Point(40, 265),
                 Size = new System.Drawing.Size(200, 20),
                 Font = BankTheme.SmallFont
             };
@@ -211,194 +277,245 @@ namespace SistemaBanco
                 txtConfirmPassword.UseSystemPasswordChar = !chkMostrarPassword.Checked;
             };
 
-            Button btnCambiarPassword = new Button
+            Button btnContinuarStep2 = new Button
             {
-                Text = "CAMBIAR CONTRASEÑA",
-                Location = new System.Drawing.Point(125, 330),
-                Size = new System.Drawing.Size(250, 45)
+                Text = "CONTINUAR",
+                Location = new System.Drawing.Point(200, 330),
+                Size = new System.Drawing.Size(200, 45)
             };
-            BankTheme.StyleButton(btnCambiarPassword, true);
-            btnCambiarPassword.Click += BtnCambiarPassword_Click;
+            BankTheme.StyleButton(btnContinuarStep2, true);
+            btnContinuarStep2.Click += BtnContinuarStep2_Click;
 
             panelStep2.Controls.AddRange(new Control[] {
-                lblStep2Title, lblToken, txtToken, lblNuevaPassword, txtNuevaPassword,
-                lblPasswordStrength, lblConfirmPassword, txtConfirmPassword,
-                chkMostrarPassword, btnCambiarPassword
+                lblStep2Title, lblInstrucciones, lblNuevaPassword, txtNuevaPassword,
+                lblConfirmPassword, txtConfirmPassword, chkMostrarPassword, btnContinuarStep2
             });
 
-            // Botón volver
-            LinkLabel linkVolver = new LinkLabel
-            {
-                Text = "← Volver al inicio de sesión",
-                Location = new System.Drawing.Point(200, 580),
-                Size = new System.Drawing.Size(200, 20),
-                Font = BankTheme.SmallFont,
-                TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
-                LinkColor = BankTheme.PrimaryBlue
-            };
-            linkVolver.LinkClicked += (s, e) => this.Close();
-
-            this.Controls.AddRange(new Control[] { headerPanel, panelStep1, panelStep2, linkVolver });
+            this.Controls.AddRange(new Control[] { headerPanel, panelStep1, panelStep2 });
         }
 
-        private void BtnEnviarCodigo_Click(object sender, EventArgs e)
+        private void TxtUsuario_Leave(object sender, EventArgs e)
         {
-            string emailUsuario = txtEmailUsuario.Text.Trim();
-
-            if (string.IsNullOrEmpty(emailUsuario))
-            {
-                MessageBox.Show("Ingrese su correo electrónico o nombre de usuario", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+            string usuario = txtUsuario.Text.Trim();
+            if (string.IsNullOrEmpty(usuario)) return;
 
             try
             {
-                // Buscar usuario por email o nombre de usuario
-                string query = "SELECT id_usuario, email, nombre_completo FROM usuarios WHERE email = @input OR usuario = @input";
-                DataTable dt = Database.ExecuteQuery(query, new NpgsqlParameter("@input", emailUsuario));
+                // Buscar usuario y sus preguntas de seguridad
+                string query = @"SELECT id_usuario, nombre_completo, email,
+                                pregunta_seguridad_1, respuesta_seguridad_1,
+                                pregunta_seguridad_2, respuesta_seguridad_2,
+                                pregunta_seguridad_3, respuesta_seguridad_3
+                                FROM usuarios WHERE usuario = @user AND estatus = TRUE";
+                DataTable dt = Database.ExecuteQuery(query, new NpgsqlParameter("@user", usuario));
 
-                if (dt.Rows.Count == 0)
+                if (dt.Rows.Count > 0)
                 {
-                    MessageBox.Show("No se encontró ninguna cuenta con ese correo o usuario", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
+                    idUsuarioRecuperacion = Convert.ToInt32(dt.Rows[0]["id_usuario"]);
+                    nombreUsuario = dt.Rows[0]["nombre_completo"].ToString();
+                    emailUsuario = dt.Rows[0]["email"].ToString();
+
+                    // Mostrar preguntas de seguridad
+                    lblPregunta1.Text = dt.Rows[0]["pregunta_seguridad_1"].ToString();
+                    respuestaCorrecta1 = dt.Rows[0]["respuesta_seguridad_1"].ToString().ToLower().Trim();
+
+                    lblPregunta2.Text = dt.Rows[0]["pregunta_seguridad_2"].ToString();
+                    respuestaCorrecta2 = dt.Rows[0]["respuesta_seguridad_2"].ToString().ToLower().Trim();
+
+                    lblPregunta3.Text = dt.Rows[0]["pregunta_seguridad_3"].ToString();
+                    respuestaCorrecta3 = dt.Rows[0]["respuesta_seguridad_3"].ToString().ToLower().Trim();
+
+                    // Mostrar controles de preguntas
+                    var lblPreguntasTitle = panelStep1.Controls[3] as Label;
+                    if (lblPreguntasTitle != null) lblPreguntasTitle.Visible = true;
+                    lblPregunta1.Visible = true;
+                    txtRespuesta1.Visible = true;
+                    lblPregunta2.Visible = true;
+                    txtRespuesta2.Visible = true;
+                    lblPregunta3.Visible = true;
+                    txtRespuesta3.Visible = true;
                 }
-
-                idUsuarioRecuperacion = Convert.ToInt32(dt.Rows[0]["id_usuario"]);
-                string email = dt.Rows[0]["email"].ToString();
-                string nombre = dt.Rows[0]["nombre_completo"].ToString();
-
-                // Generar token de 6 dígitos
-                Random random = new Random();
-                tokenGenerado = random.Next(100000, 999999).ToString();
-
-                // Guardar token en base de datos
-                string queryToken = @"INSERT INTO tokens_recuperacion (id_usuario, token, fecha_expiracion) 
-                                     VALUES (@id, @token, @expira)";
-                Database.ExecuteNonQuery(queryToken,
-                    new NpgsqlParameter("@id", idUsuarioRecuperacion),
-                    new NpgsqlParameter("@token", tokenGenerado),
-                    new NpgsqlParameter("@expira", DateTime.Now.AddMinutes(15)));
-
-                // En producción, aquí se enviaría el email
-                // Por ahora, mostrar el código en un mensaje
-                MessageBox.Show($"Código de verificación generado:\n\n{tokenGenerado}\n\n(En producción se enviaría a: {email})\n\nEl código expira en 15 minutos.",
-                    "Código Generado", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                // Cambiar a paso 2
-                panelStep1.Visible = false;
-                panelStep2.Visible = true;
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // No mostrar error aquí, se validará al hacer clic en Continuar
             }
         }
 
-        private void TxtNuevaPassword_TextChanged(object sender, EventArgs e)
+        private void BtnContinuarStep1_Click(object sender, EventArgs e)
         {
-            string password = txtNuevaPassword.Text;
-            if (string.IsNullOrEmpty(password))
+            string usuario = txtUsuario.Text.Trim();
+
+            if (string.IsNullOrEmpty(usuario))
             {
-                lblPasswordStrength.Text = "";
+                CustomMessageBox.Show("Campo Requerido",
+                    "Por favor ingrese su nombre de usuario.",
+                    MessageBoxIcon.Warning);
+                txtUsuario.Focus();
                 return;
             }
 
-            int strength = 0;
-            if (password.Length >= 8) strength++;
-            if (Regex.IsMatch(password, @"[a-z]")) strength++;
-            if (Regex.IsMatch(password, @"[A-Z]")) strength++;
-            if (Regex.IsMatch(password, @"[0-9]")) strength++;
-            if (Regex.IsMatch(password, @"[!@#$%^&*(),.?""':{}|<>]")) strength++;
-
-            switch (strength)
+            // Verificar si el usuario existe
+            if (idUsuarioRecuperacion == 0)
             {
-                case 0:
-                case 1:
-                    lblPasswordStrength.Text = "Seguridad: Muy débil";
-                    lblPasswordStrength.ForeColor = BankTheme.Danger;
-                    break;
-                case 2:
-                    lblPasswordStrength.Text = "Seguridad: Débil";
-                    lblPasswordStrength.ForeColor = BankTheme.Warning;
-                    break;
-                case 3:
-                    lblPasswordStrength.Text = "Seguridad: Media";
-                    lblPasswordStrength.ForeColor = BankTheme.Warning;
-                    break;
-                case 4:
-                    lblPasswordStrength.Text = "Seguridad: Fuerte";
-                    lblPasswordStrength.ForeColor = BankTheme.Success;
-                    break;
-                case 5:
-                    lblPasswordStrength.Text = "Seguridad: Muy fuerte";
-                    lblPasswordStrength.ForeColor = BankTheme.Success;
-                    break;
+                CustomMessageBox.Show("Usuario no registrado en el sistema",
+                    "El nombre de usuario ingresado no se encuentra registrado en el sistema.\n\nPor favor verifique que el usuario sea correcto o regístrese si aún no tiene una cuenta.",
+                    MessageBoxIcon.Warning);
+                txtUsuario.Focus();
+                return;
             }
+
+            // Validar respuestas de seguridad
+            string respuesta1 = txtRespuesta1.Text.ToLower().Trim();
+            string respuesta2 = txtRespuesta2.Text.ToLower().Trim();
+            string respuesta3 = txtRespuesta3.Text.ToLower().Trim();
+
+            if (string.IsNullOrEmpty(respuesta1) || string.IsNullOrEmpty(respuesta2) || string.IsNullOrEmpty(respuesta3))
+            {
+                CustomMessageBox.Show("Respuestas Incompletas",
+                    "Por favor responda todas las preguntas de seguridad.",
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (respuesta1 != respuestaCorrecta1 || respuesta2 != respuestaCorrecta2 || respuesta3 != respuestaCorrecta3)
+            {
+                CustomMessageBox.Show("Algunas respuestas son incorrectas",
+                    "Una o más respuestas de seguridad no coinciden con las registradas.\n\nPor favor verifique sus respuestas e intente nuevamente.",
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Si todo es correcto, pasar al paso 2
+            panelStep1.Visible = false;
+            panelStep2.Visible = true;
         }
 
-        private void BtnCambiarPassword_Click(object sender, EventArgs e)
+        private void BtnContinuarStep2_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtToken.Text))
+            string nuevaPassword = txtNuevaPassword.Text;
+            string confirmPassword = txtConfirmPassword.Text;
+
+            // Validar que no estén vacías
+            if (string.IsNullOrWhiteSpace(nuevaPassword))
             {
-                MessageBox.Show("Ingrese el código de verificación", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                CustomMessageBox.Show("Campo Requerido",
+                    "Por favor ingrese su nueva contraseña.",
+                    MessageBoxIcon.Warning);
+                txtNuevaPassword.Focus();
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(txtNuevaPassword.Text))
+            // Validar longitud
+            if (nuevaPassword.Length < 8 || nuevaPassword.Length > 20)
             {
-                MessageBox.Show("Ingrese la nueva contraseña", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                CustomMessageBox.Show("La contraseña no cumple con todos los requisitos",
+                    "La contraseña debe tener entre 8 y 20 caracteres.\n\nPor favor ingrese una contraseña válida.",
+                    MessageBoxIcon.Warning);
+                txtNuevaPassword.Focus();
                 return;
             }
 
-            if (txtNuevaPassword.Text.Length < 8)
+            // Validar complejidad
+            bool tieneMayuscula = Regex.IsMatch(nuevaPassword, @"[A-Z]");
+            bool tieneMinuscula = Regex.IsMatch(nuevaPassword, @"[a-z]");
+            bool tieneNumero = Regex.IsMatch(nuevaPassword, @"[0-9]");
+            bool tieneSimbolo = Regex.IsMatch(nuevaPassword, @"[!@#$%^&*(),.?""':{}|<>]");
+
+            if (!tieneMayuscula || !tieneMinuscula || !tieneNumero || !tieneSimbolo)
             {
-                MessageBox.Show("La contraseña debe tener al menos 8 caracteres", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                CustomMessageBox.Show("La contraseña no cumple con todos los requisitos",
+                    "La contraseña debe incluir:\n\n• Al menos una letra mayúscula\n• Al menos una letra minúscula\n• Al menos un número\n• Al menos un símbolo (!@#$%^&*...)\n\nPor favor ingrese una contraseña que cumpla con todos los requisitos.",
+                    MessageBoxIcon.Warning);
+                txtNuevaPassword.Focus();
                 return;
             }
 
-            if (txtNuevaPassword.Text != txtConfirmPassword.Text)
+            // Validar que coincidan
+            if (nuevaPassword != confirmPassword)
             {
-                MessageBox.Show("Las contraseñas no coinciden", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                CustomMessageBox.Show("Las contraseñas no coinciden",
+                    "La nueva contraseña y la contraseña de confirmación no son iguales.\n\nPor favor verifique que ambas contraseñas sean idénticas.",
+                    MessageBoxIcon.Warning);
+                txtConfirmPassword.Focus();
                 return;
             }
 
             try
             {
-                // Verificar token
-                string queryToken = @"SELECT id_token FROM tokens_recuperacion 
-                                     WHERE id_usuario = @id AND token = @token 
-                                     AND fecha_expiracion > @ahora AND usado = FALSE";
-                DataTable dt = Database.ExecuteQuery(queryToken,
-                    new NpgsqlParameter("@id", idUsuarioRecuperacion),
-                    new NpgsqlParameter("@token", txtToken.Text.Trim()),
-                    new NpgsqlParameter("@ahora", DateTime.Now));
-
-                if (dt.Rows.Count == 0)
-                {
-                    MessageBox.Show("Código de verificación inválido o expirado", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                int idToken = Convert.ToInt32(dt.Rows[0]["id_token"]);
-
-                // Actualizar contraseña
+                // Actualizar contraseña en la base de datos
                 string queryUpdate = "UPDATE usuarios SET contraseña = @pass WHERE id_usuario = @id";
                 Database.ExecuteNonQuery(queryUpdate,
-                    new NpgsqlParameter("@pass", txtNuevaPassword.Text), // En producción usar hash
+                    new NpgsqlParameter("@pass", nuevaPassword),
                     new NpgsqlParameter("@id", idUsuarioRecuperacion));
 
-                // Marcar token como usado
-                string queryUsado = "UPDATE tokens_recuperacion SET usado = TRUE WHERE id_token = @id";
-                Database.ExecuteNonQuery(queryUsado, new NpgsqlParameter("@id", idToken));
+                // Intentar enviar correo de confirmación
+                if (EmailService.ConfiguracionValida())
+                {
+                    EnviarCorreoConfirmacion(emailUsuario, nombreUsuario);
+                }
 
-                MessageBox.Show("¡Contraseña cambiada exitosamente!\n\nYa puedes iniciar sesión con tu nueva contraseña.",
-                    "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // Mostrar mensaje de éxito
+                CustomMessageBox.Show("La contraseña se ha actualizado correctamente",
+                    $"Su contraseña ha sido restablecida exitosamente.\n\nSe ha enviado una confirmación a su correo electrónico: {emailUsuario}\n\nYa puede iniciar sesión con su nueva contraseña.",
+                    MessageBoxIcon.Information);
 
                 this.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                CustomMessageBox.Show("Error al Actualizar Contraseña",
+                    $"No se pudo actualizar la contraseña debido a un error del sistema.\n\nDetalle técnico: {ex.Message}\n\nPor favor intente nuevamente o contacte al administrador.",
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private void EnviarCorreoConfirmacion(string toEmail, string nombreUsuario)
+        {
+            try
+            {
+                string subject = "Contraseña Restablecida - Módulo Banco";
+
+                string body = $@"
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body {{ font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }}
+                        .container {{ max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+                        .header {{ background-color: #1e3a8a; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+                        .content {{ padding: 30px; text-align: center; }}
+                        .success-icon {{ font-size: 64px; color: #10b981; margin: 20px 0; }}
+                        .footer {{ text-align: center; padding: 20px; color: #666; font-size: 12px; }}
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <div class='header'>
+                            <h1>🏦 Módulo Banco</h1>
+                            <p>Confirmación de Cambio de Contraseña</p>
+                        </div>
+                        <div class='content'>
+                            <div class='success-icon'>✓</div>
+                            <h2>¡Contraseña Actualizada!</h2>
+                            <p>Hola <strong>{nombreUsuario}</strong>,</p>
+                            <p>Tu contraseña ha sido restablecida exitosamente.</p>
+                            <p>Si no realizaste este cambio, por favor contacta inmediatamente con nuestro equipo de soporte.</p>
+                            <p style='margin-top: 30px;'>Fecha: {DateTime.Now:dd/MM/yyyy HH:mm}</p>
+                        </div>
+                        <div class='footer'>
+                            <p>© 2025 Módulo Banco. Todos los derechos reservados.</p>
+                            <p>Este es un correo automático, por favor no responder.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>";
+
+                EmailService.EnviarCorreo(toEmail, subject, body);
+            }
+            catch
+            {
+                // Si falla el envío de correo, no afecta el proceso
             }
         }
     }

@@ -1,3 +1,17 @@
+// ============================================
+// CÓDIGO COMPLETO DE FormRegistro.cs
+// Implementa BAN-7, BAN-8 y BAN-9
+// ============================================
+//
+// INSTRUCCIONES PARA AGREGAR:
+// 1. En Visual Studio, clic derecho en el proyecto
+// 2. Add > New Item > Class
+// 3. Nombrar: FormRegistro.cs
+// 4. Reemplazar todo el contenido con este código
+// 5. Guardar y compilar
+//
+// ============================================
+
 using System;
 using System.Data;
 using System.Text.RegularExpressions;
@@ -44,7 +58,7 @@ namespace SistemaBanco
         private void InitializeComponent()
         {
             this.Text = "Módulo Banco - Registro de Usuario";
-            this.ClientSize = new System.Drawing.Size(700, 800);
+            this.ClientSize = new System.Drawing.Size(700, 900);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = BankTheme.LightGray;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -106,7 +120,7 @@ namespace SistemaBanco
             headerPanel.Controls.AddRange(new Control[] { btnRegresar, lblLogo, lblTitulo, lblSubtitulo });
 
             // Card principal
-            Panel mainCard = BankTheme.CreateCard(50, 120, 600, 600);
+            Panel mainCard = BankTheme.CreateCard(50, 120, 600, 700);
             mainCard.AutoScroll = true;
 
             int yPos = 20;
@@ -412,7 +426,7 @@ namespace SistemaBanco
             Button btnRegistrar = new Button
             {
                 Text = "CONTINUAR",
-                Location = new System.Drawing.Point(225, 735),
+                Location = new System.Drawing.Point(225, 840),
                 Size = new System.Drawing.Size(250, 45)
             };
             BankTheme.StyleButton(btnRegistrar, true);
@@ -420,8 +434,8 @@ namespace SistemaBanco
 
             LinkLabel linkLogin = new LinkLabel
             {
-                Text = "¿Ya tienes usuario? Iniciar sesión",
-                Location = new System.Drawing.Point(225, 785),
+                Text = "Ya tienes usuario? Iniciar sesion",
+                Location = new System.Drawing.Point(225, 890),
                 Size = new System.Drawing.Size(250, 20),
                 Font = BankTheme.SmallFont,
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter,

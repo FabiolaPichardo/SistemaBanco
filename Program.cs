@@ -8,6 +8,10 @@ namespace SistemaBanco
         [STAThread]
         static void Main()
         {
+            // Descomentar la siguiente línea para probar la conexión
+            //TestConexion.ProbarConexion();
+            //return;
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new FormLogin());

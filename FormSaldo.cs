@@ -18,7 +18,7 @@ namespace SistemaBanco
 
         private void InitializeComponent()
         {
-            this.Text = "Banco Premier - Consulta de Saldo";
+            this.Text = "Módulo Banco - Consulta de Saldo";
             this.ClientSize = new System.Drawing.Size(600, 460);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = BankTheme.LightGray;

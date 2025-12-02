@@ -12,7 +12,7 @@ namespace SistemaBanco
 
         private void InitializeComponent()
         {
-            this.Text = $"Banco Premier - Portal de Cliente";
+            this.Text = "Módulo Banco - Portal de Cliente";
             this.ClientSize = new System.Drawing.Size(1000, 700);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = BankTheme.LightGray;
@@ -29,7 +29,7 @@ namespace SistemaBanco
 
             Label lblLogo = new Label
             {
-                Text = "🏦 BANCO PREMIER",
+                Text = "🏦 MÓDULO BANCO",
                 Location = new System.Drawing.Point(30, 25),
                 Size = new System.Drawing.Size(300, 50),
                 Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Bold),
