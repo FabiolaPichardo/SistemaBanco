@@ -8,7 +8,9 @@ namespace SistemaBanco
     public partial class FormLogin : Form
     {
         public static int IdUsuarioActual;
+        public static int IdUsuario => IdUsuarioActual; // Alias para compatibilidad
         public static string NombreUsuario;
+        public static string UsuarioActual; // Nombre de usuario (login)
         public static int IdCuentaActual;
         public static string RolUsuario;
 
@@ -381,6 +383,7 @@ namespace SistemaBanco
 
                     IdUsuarioActual = idUsuario;
                     NombreUsuario = nombreCompleto;
+                    UsuarioActual = usuario; // Guardar nombre de usuario (login)
                     RolUsuario = rol;
 
                     // Obtener cuenta del usuario

@@ -1,0 +1,3 @@
+-- ═══════════════════════════════════════════════════════════════════
+-- SCRIPT DE CREACIÓN DE TABLAS PARA AUDITORÍA Y SEGURIDAD (BAN-56 a BAN-59)
+-- Sistema Bancario - Módulo de Auditoría y Seguridad Avanzada

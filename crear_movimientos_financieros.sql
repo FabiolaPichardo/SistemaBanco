@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS movimientos_financieros (
     concepto TEXT NOT NULL,                               -- BAN-26
     referencia VARCHAR(50),                               -- BAN-26: PO/Factura
     cuenta_contable VARCHAR(100) NOT NULL,                -- BAN-26: Catálogo ERP
-    estado VARCHAR(20) DEFAULT 'PENDIENTE' CHECK (estado IN ('PENDIENTE', 'PROCESADO', 'RECHAZADO')), -- BAN-23
+    estado VARCHAR(20) DEFAULT 'PENDIENTE' CHECK (estado IN ('PENDIENTE', 'PROCESADO', 'RECHAZADO', 'ELIMINADO')), -- BAN-23, BAN-44
     id_usuario INTEGER REFERENCES usuarios(id_usuario),  -- BAN-26: Usuario responsable
     fecha_procesamiento TIMESTAMP,
     usuario_autorizacion INTEGER REFERENCES usuarios(id_usuario),
@@ -87,3 +87,60 @@ VALUES
 
 SELECT 'Tabla movimientos_financieros creada exitosamente!' as mensaje;
 SELECT COUNT(*) as total_movimientos FROM movimientos_financieros;
+
+
+-- ============================================
+-- BAN-44: TABLA DE AUDITORÍA
+-- Historial de cambios en movimientos
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS historial_movimientos (
+    id_historial SERIAL PRIMARY KEY,
+    id_movimiento INTEGER REFERENCES movimientos_financieros(id_movimiento),
+    folio VARCHAR(50) NOT NULL,
+    accion VARCHAR(50) NOT NULL, -- 'CREADO', 'EDITADO', 'ELIMINADO', 'ESTADO_CAMBIADO'
+    campo_modificado VARCHAR(100),
+    valor_anterior TEXT,
+    valor_nuevo TEXT,
+    usuario VARCHAR(100) NOT NULL,
+    fecha_accion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    comentarios TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_historial_folio ON historial_movimientos(folio);
+CREATE INDEX IF NOT EXISTS idx_historial_fecha ON historial_movimientos(fecha_accion DESC);
+
+-- Trigger para auditoría automática
+CREATE OR REPLACE FUNCTION registrar_auditoria_movimiento()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (TG_OP = 'UPDATE') THEN
+        -- Registrar cambio de estado
+        IF OLD.estado != NEW.estado THEN
+            INSERT INTO historial_movimientos (id_movimiento, folio, accion, campo_modificado, valor_anterior, valor_nuevo, usuario, comentarios)
+            VALUES (NEW.id_movimiento, NEW.folio, 'ESTADO_CAMBIADO', 'estado', OLD.estado, NEW.estado, CURRENT_USER, NEW.comentarios_autorizacion);
+        END IF;
+        
+        -- Registrar cambio de concepto
+        IF OLD.concepto != NEW.concepto THEN
+            INSERT INTO historial_movimientos (id_movimiento, folio, accion, campo_modificado, valor_anterior, valor_nuevo, usuario)
+            VALUES (NEW.id_movimiento, NEW.folio, 'EDITADO', 'concepto', OLD.concepto, NEW.concepto, CURRENT_USER);
+        END IF;
+        
+        -- Registrar cambio de referencia
+        IF OLD.referencia != NEW.referencia THEN
+            INSERT INTO historial_movimientos (id_movimiento, folio, accion, campo_modificado, valor_anterior, valor_nuevo, usuario)
+            VALUES (NEW.id_movimiento, NEW.folio, 'EDITADO', 'referencia', OLD.referencia, NEW.referencia, CURRENT_USER);
+        END IF;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_auditoria_movimientos
+AFTER UPDATE ON movimientos_financieros
+FOR EACH ROW
+EXECUTE FUNCTION registrar_auditoria_movimiento();
+
+SELECT 'Sistema de auditoría configurado exitosamente!' as mensaje;

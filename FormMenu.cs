@@ -86,7 +86,7 @@ namespace SistemaBanco
             // Segunda fila
             Panel cardHistorial = CreateMenuCard(50, 390, 280, 180, "📊", "Historial", "Ver movimientos realizados", "Historial");
             Panel cardEstado = CreateMenuCard(360, 390, 280, 180, "📄", "Estado de Cuenta", "Generar reporte detallado", "EstadoCuenta");
-            Panel cardPerfil = CreateMenuCard(670, 390, 280, 180, "👤", "Mi Perfil", "Configuración de cuenta", "ConsultarSaldo");
+            Panel cardAdminUsuarios = CreateMenuCard(670, 390, 280, 180, "👥", "Admin. Usuarios", "Gestionar usuarios del sistema", "AdministrarUsuarios");
 
             // Botón cerrar sesión
             Button btnSalir = new Button
@@ -103,10 +103,10 @@ namespace SistemaBanco
             AsignarEventoCard(cardTransferencia, () => new FormTransferencia().ShowDialog());
             AsignarEventoCard(cardHistorial, () => new FormRevisionMovimientos().ShowDialog());
             AsignarEventoCard(cardEstado, () => new FormEstadoCuenta().ShowDialog());
-            AsignarEventoCard(cardPerfil, () => MessageBox.Show("Funcionalidad en desarrollo", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information));
+            AsignarEventoCard(cardAdminUsuarios, () => new FormAdministracionUsuarios().ShowDialog());
             btnSalir.Click += (s, e) => this.Close();
 
-            this.Controls.AddRange(new Control[] { headerPanel, lblTitulo, cardSaldo, cardMovimiento, cardTransferencia, cardHistorial, cardEstado, cardPerfil, btnSalir });
+            this.Controls.AddRange(new Control[] { headerPanel, lblTitulo, cardSaldo, cardMovimiento, cardTransferencia, cardHistorial, cardEstado, cardAdminUsuarios, btnSalir });
         }
 
         private void AsignarEventoCard(Panel card, Action action)

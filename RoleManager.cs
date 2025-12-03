@@ -63,6 +63,7 @@ namespace SistemaBanco
                 "AprobarTransferencias",
                 "ReportesGerenciales",
                 "GestionUsuarios",
+                "AdministrarUsuarios",
                 "ConfiguracionSistema",
                 "ExportarCompleto",
                 "FiltrosAvanzados"
