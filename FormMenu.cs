@@ -8,6 +8,7 @@ namespace SistemaBanco
         public FormMenu()
         {
             InitializeComponent();
+            IconHelper.SetFormIcon(this);
         }
 
         private void InitializeComponent()
@@ -86,10 +87,10 @@ namespace SistemaBanco
             // Segunda fila
             Panel cardHistorial = CreateMenuCard(50, 390, 280, 180, "📊", "Historial", "Ver movimientos realizados", "Historial");
             Panel cardEstado = CreateMenuCard(360, 390, 280, 180, "📄", "Estado de Cuenta", "Generar reporte detallado", "EstadoCuenta");
-            Panel cardAdminUsuarios = CreateMenuCard(670, 390, 280, 180, "👥", "Admin. Usuarios", "Gestionar usuarios del sistema", "AdministrarUsuarios");
+            Panel cardDivisas = CreateMenuCard(670, 390, 280, 180, "💱", "Autorización Divisas", "Gestionar operaciones en moneda extranjera", "ConsultarSolicitudesDivisas");
 
             // Tercera fila - Módulos especializados (centrado)
-            Panel cardDivisas = CreateMenuCard(360, 600, 280, 180, "💱", "Autorización Divisas", "Gestionar operaciones en moneda extranjera", "ConsultarSolicitudesDivisas");
+            Panel cardAdminUsuarios = CreateMenuCard(360, 600, 280, 180, "👥", "Admin. Usuarios", "Gestionar usuarios del sistema", "AdministrarUsuarios");
 
             // Botón cerrar sesión
             Button btnSalir = new Button
@@ -104,11 +105,11 @@ namespace SistemaBanco
             AsignarEventoCard(cardSaldo, () => new FormSaldo().ShowDialog());
             AsignarEventoCard(cardMovimiento, () => new FormMovimientoFinanciero().ShowDialog());
             AsignarEventoCard(cardTransferencia, () => new FormTransferencia().ShowDialog());
-            AsignarEventoCard(cardHistorial, () => new FormRevisionMovimientos().ShowDialog());
+            AsignarEventoCard(cardHistorial, () => new FormHistorial().ShowDialog());
             AsignarEventoCard(cardEstado, () => new FormEstadoCuenta().ShowDialog());
             AsignarEventoCard(cardAdminUsuarios, () => new FormAdministracionUsuarios().ShowDialog());
             AsignarEventoCard(cardDivisas, () => new FormAutorizacionDivisas().ShowDialog());
-            btnSalir.Click += (s, e) => this.Close();
+            btnSalir.Click += BtnCerrarSesion_Click;
 
             this.Controls.AddRange(new Control[] { headerPanel, lblTitulo, cardSaldo, cardMovimiento, cardTransferencia, cardHistorial, cardEstado, cardAdminUsuarios, cardDivisas, btnSalir });
         }
@@ -187,6 +188,25 @@ namespace SistemaBanco
             }
 
             return card;
+        }
+
+        private void BtnCerrarSesion_Click(object sender, EventArgs e)
+        {
+            DialogResult resultado = MessageBox.Show(
+                "¿Está seguro que desea cerrar sesión?\n\nSe cerrará su sesión actual y regresará a la pantalla de inicio de sesión.",
+                "Confirmar Cierre de Sesión",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question,
+                MessageBoxDefaultButton.Button2);
+
+            if (resultado == DialogResult.Yes)
+            {
+                // Cerrar este formulario y mostrar el login
+                this.Hide();
+                FormLogin loginForm = new FormLogin();
+                loginForm.ShowDialog();
+                this.Close();
+            }
         }
     }
 }

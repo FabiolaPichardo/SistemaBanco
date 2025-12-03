@@ -50,7 +50,7 @@ namespace SistemaBanco
         private void InitializeComponent()
         {
             this.Text = "Módulo Banco - Autorización de Operaciones en Divisas";
-            this.ClientSize = new Size(1400, 850);
+            this.ClientSize = new Size(1400, 800);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = BankTheme.LightGray;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -146,8 +146,10 @@ namespace SistemaBanco
             {
                 Location = new Point(650, 48),
                 Size = new Size(150, 25),
-                Font = BankTheme.BodyFont
+                Font = BankTheme.BodyFont,
+                PlaceholderText = "Buscar ID..."
             };
+            txtBuscarID.TextChanged += (s, e) => BuscarConValidacion();
 
             Label lblBuscarNombre = new Label
             {
@@ -270,9 +272,9 @@ namespace SistemaBanco
 
             btnAplicarExpiracion = new Button
             {
-                Text = "Aplicar a Seleccionadas",
+                Text = "Aplicar",
                 Location = new Point(490, 15),
-                Size = new Size(180, 30),
+                Size = new Size(120, 30),
                 Font = BankTheme.BodyFont
             };
             BankTheme.StyleButton(btnAplicarExpiracion, true);
@@ -369,7 +371,7 @@ namespace SistemaBanco
             Button btnCerrar = new Button
             {
                 Text = "CERRAR",
-                Location = new Point(600, 780), // (1400 - 200) / 2 = 600, Y=780 para ventana de 850px
+                Location = new Point(600, 730), // (1400 - 200) / 2 = 600, Y=730 para ventana de 800px
                 Size = new Size(200, 45)
             };
             BankTheme.StyleButton(btnCerrar, false);
@@ -823,23 +825,54 @@ namespace SistemaBanco
                     return;
                 }
 
-                string contenido = GenerarContenidoReporte();
-                string extension = formato == "Excel" ? "csv" : "txt";
-                string filtro = formato == "Excel" ? "Archivo CSV (*.csv)|*.csv" : $"Archivo {formato} (*.txt)|*.txt";
+                SaveFileDialog saveDialog = new SaveFileDialog();
+                string contenido = "";
 
-                SaveFileDialog saveDialog = new SaveFileDialog
+                switch (formato)
                 {
-                    Filter = filtro,
-                    FileName = $"Autorizacion_Divisas_{DateTime.Now:yyyyMMdd_HHmmss}.{extension}",
-                    Title = $"Exportar Reporte {formato}"
-                };
+                    case "PDF":
+                        saveDialog.Filter = "Archivo HTML (*.html)|*.html";
+                        saveDialog.FileName = $"Autorizacion_Divisas_{DateTime.Now:yyyyMMdd_HHmmss}.html";
+                        saveDialog.Title = "Exportar a PDF (se abrirá en navegador)";
+                        
+                        if (saveDialog.ShowDialog() == DialogResult.OK)
+                        {
+                            contenido = GenerarHTMLDivisas();
+                            System.IO.File.WriteAllText(saveDialog.FileName, contenido);
+                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(saveDialog.FileName) { UseShellExecute = true });
+                            CustomMessageBox.Show("Exportación Exitosa",
+                                "Archivo HTML generado. Se abrirá en su navegador.\nDesde ahí puede guardarlo como PDF usando Ctrl+P.",
+                                MessageBoxIcon.Information);
+                        }
+                        break;
 
-                if (saveDialog.ShowDialog() == DialogResult.OK)
-                {
-                    System.IO.File.WriteAllText(saveDialog.FileName, contenido);
-                    CustomMessageBox.Show("Exportación Exitosa",
-                        $"El reporte se ha guardado correctamente en:\n{saveDialog.FileName}",
-                        MessageBoxIcon.Information);
+                    case "Word":
+                        saveDialog.Filter = "Documento Word (*.doc)|*.doc";
+                        saveDialog.FileName = $"Autorizacion_Divisas_{DateTime.Now:yyyyMMdd_HHmmss}.doc";
+                        
+                        if (saveDialog.ShowDialog() == DialogResult.OK)
+                        {
+                            contenido = GenerarWordDivisas();
+                            System.IO.File.WriteAllText(saveDialog.FileName, contenido);
+                            CustomMessageBox.Show("Exportación Exitosa",
+                                $"Documento Word generado exitosamente en:\n{saveDialog.FileName}",
+                                MessageBoxIcon.Information);
+                        }
+                        break;
+
+                    case "Excel":
+                        saveDialog.Filter = "Archivo CSV (*.csv)|*.csv";
+                        saveDialog.FileName = $"Autorizacion_Divisas_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+                        
+                        if (saveDialog.ShowDialog() == DialogResult.OK)
+                        {
+                            contenido = GenerarCSVDivisas();
+                            System.IO.File.WriteAllText(saveDialog.FileName, contenido);
+                            CustomMessageBox.Show("Exportación Exitosa",
+                                $"Archivo CSV generado exitosamente en:\n{saveDialog.FileName}\n\nPuede abrirlo con Excel.",
+                                MessageBoxIcon.Information);
+                        }
+                        break;
                 }
             }
             catch (Exception ex)
@@ -848,6 +881,133 @@ namespace SistemaBanco
                     $"No se pudo exportar el reporte.\n\nDetalle: {ex.Message}",
                     MessageBoxIcon.Error);
             }
+        }
+
+        private string GenerarHTMLDivisas()
+        {
+            string html = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>Autorización de Divisas</title>
+    <style>
+        body {{ font-family: 'Segoe UI', Arial, sans-serif; margin: 40px; }}
+        h1 {{ color: #1e40af; text-align: center; }}
+        .info {{ background: #f3f4f6; padding: 15px; margin: 20px 0; border-radius: 8px; }}
+        table {{ width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 11px; }}
+        th {{ background: #1e40af; color: white; padding: 10px; text-align: left; }}
+        td {{ padding: 8px; border-bottom: 1px solid #e5e7eb; }}
+        tr:nth-child(even) {{ background: #f9fafb; }}
+        .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
+    </style>
+</head>
+<body>
+    <h1>💱 Autorización de Operaciones en Divisas</h1>
+    <div class='info'>
+        <strong>Usuario:</strong> {FormLogin.NombreUsuario} ({FormLogin.RolUsuario})<br>
+        <strong>Fecha de generación:</strong> {DateTime.Now:dd/MM/yyyy HH:mm:ss}<br>
+        <strong>Total de solicitudes:</strong> {dgvSolicitudes.Rows.Count}
+    </div>
+    <table>
+        <tr>
+            <th>ID Transacción</th>
+            <th>Descripción</th>
+            <th>Titular</th>
+            <th>Divisa</th>
+            <th>Tasa</th>
+            <th>Monto MXN</th>
+            <th>Monto Divisa</th>
+            <th>Estado</th>
+            <th>Fecha</th>
+        </tr>";
+
+            foreach (DataGridViewRow row in dgvSolicitudes.Rows)
+            {
+                html += $@"
+        <tr>
+            <td>{row.Cells["id_transaccion"].Value}</td>
+            <td>{row.Cells["descripcion"].Value}</td>
+            <td>{row.Cells["titular"].Value}</td>
+            <td>{row.Cells["divisa"].Value}</td>
+            <td>{Convert.ToDecimal(row.Cells["tasa_cambio"].Value):N4}</td>
+            <td>${Convert.ToDecimal(row.Cells["monto_mxn"].Value):N2}</td>
+            <td>{Convert.ToDecimal(row.Cells["monto_divisa"].Value):N2}</td>
+            <td>{row.Cells["estado"].Value}</td>
+            <td>{Convert.ToDateTime(row.Cells["fecha_solicitud"].Value):dd/MM/yyyy}</td>
+        </tr>";
+            }
+
+            html += @"
+    </table>
+    <div class='footer'>
+        © 2025 Módulo Banco - Documento Confidencial
+    </div>
+</body>
+</html>";
+
+            return html;
+        }
+
+        private string GenerarWordDivisas()
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("MÓDULO BANCO - AUTORIZACIÓN DE OPERACIONES EN DIVISAS");
+            sb.AppendLine("=======================================================");
+            sb.AppendLine();
+            sb.AppendLine($"Usuario: {FormLogin.NombreUsuario} ({FormLogin.RolUsuario})");
+            sb.AppendLine($"Fecha de generación: {DateTime.Now:dd/MM/yyyy HH:mm:ss}");
+            sb.AppendLine($"Total de solicitudes: {dgvSolicitudes.Rows.Count}");
+            sb.AppendLine();
+            sb.AppendLine(new string('-', 100));
+            sb.AppendLine();
+
+            foreach (DataGridViewRow row in dgvSolicitudes.Rows)
+            {
+                sb.AppendLine($"ID Transacción: {row.Cells["id_transaccion"].Value}");
+                sb.AppendLine($"Descripción: {row.Cells["descripcion"].Value}");
+                sb.AppendLine($"Titular: {row.Cells["titular"].Value}");
+                sb.AppendLine($"Divisa: {row.Cells["divisa"].Value}");
+                sb.AppendLine($"Tasa de Cambio: {Convert.ToDecimal(row.Cells["tasa_cambio"].Value):N4}");
+                sb.AppendLine($"Monto MXN: ${Convert.ToDecimal(row.Cells["monto_mxn"].Value):N2}");
+                sb.AppendLine($"Monto Divisa: {Convert.ToDecimal(row.Cells["monto_divisa"].Value):N2}");
+                sb.AppendLine($"Estado: {row.Cells["estado"].Value}");
+                sb.AppendLine($"Fecha Solicitud: {Convert.ToDateTime(row.Cells["fecha_solicitud"].Value):dd/MM/yyyy HH:mm}");
+                sb.AppendLine($"Autorizador: {row.Cells["autorizador"].Value}");
+                sb.AppendLine(new string('-', 100));
+            }
+
+            sb.AppendLine();
+            sb.AppendLine("© 2025 Módulo Banco - Documento Confidencial");
+
+            return sb.ToString();
+        }
+
+        private string GenerarCSVDivisas()
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("# AUTORIZACIÓN DE OPERACIONES EN DIVISAS");
+            sb.AppendLine($"# Usuario: {FormLogin.NombreUsuario} ({FormLogin.RolUsuario})");
+            sb.AppendLine($"# Fecha de generación: {DateTime.Now:dd/MM/yyyy HH:mm:ss}");
+            sb.AppendLine($"# Total de solicitudes: {dgvSolicitudes.Rows.Count}");
+            sb.AppendLine();
+            sb.AppendLine("ID Transacción,Descripción,Titular,Divisa,Tasa Cambio,Monto MXN,Monto Divisa,Estado,Fecha Solicitud,Autorizador");
+
+            foreach (DataGridViewRow row in dgvSolicitudes.Rows)
+            {
+                sb.Append($"\"{row.Cells["id_transaccion"].Value}\",");
+                sb.Append($"\"{row.Cells["descripcion"].Value}\",");
+                sb.Append($"\"{row.Cells["titular"].Value}\",");
+                sb.Append($"{row.Cells["divisa"].Value},");
+                sb.Append($"{Convert.ToDecimal(row.Cells["tasa_cambio"].Value):N4},");
+                sb.Append($"{Convert.ToDecimal(row.Cells["monto_mxn"].Value):N2},");
+                sb.Append($"{Convert.ToDecimal(row.Cells["monto_divisa"].Value):N2},");
+                sb.Append($"\"{row.Cells["estado"].Value}\",");
+                sb.Append($"{Convert.ToDateTime(row.Cells["fecha_solicitud"].Value):dd/MM/yyyy HH:mm},");
+                sb.AppendLine($"\"{row.Cells["autorizador"].Value}\"");
+            }
+
+            return sb.ToString();
         }
 
         private string GenerarContenidoReporte()

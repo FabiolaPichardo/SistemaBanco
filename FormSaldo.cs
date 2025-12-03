@@ -14,6 +14,7 @@ namespace SistemaBanco
         public FormSaldo()
         {
             InitializeComponent();
+            IconHelper.SetFormIcon(this);
             CargarSaldo();
             IniciarActualizacionAutomatica();
         }
@@ -27,9 +28,8 @@ namespace SistemaBanco
         private void InitializeComponent()
         {
             bool puedeVerHistorico = RoleManager.PuedeVerHistorico(FormLogin.RolUsuario);
-            string tituloVentana = puedeVerHistorico ? "Revisión de Saldos Históricos" : "Revisión de Saldo Actual";
             
-            this.Text = $"Módulo Banco - {tituloVentana}";
+            this.Text = "Módulo Banco - Revisión de Saldos";
             this.ClientSize = new System.Drawing.Size(900, puedeVerHistorico ? 750 : 650);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = BankTheme.LightGray;
@@ -47,7 +47,7 @@ namespace SistemaBanco
             // Botón de inicio
             HomeButton.AddToForm(this, headerPanel);
 
-            string titulo = puedeVerHistorico ? "REVISIÓN DE SALDOS HISTÓRICOS" : "REVISIÓN DE SALDO ACTUAL";
+            string titulo = "REVISIÓN DE SALDOS";
 
             // Calcular posición centrada para el ícono y título
             // Ancho total del header: 900px
@@ -211,7 +211,7 @@ namespace SistemaBanco
             
             Button btnExportarPDF = new Button
             {
-                Text = "📄 Exportar",
+                Text = "📄 PDF",
                 Location = new Point(460, 10),
                 Size = new Size(140, 40),
                 Font = BankTheme.BodyFont

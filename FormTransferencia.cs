@@ -15,6 +15,7 @@ namespace SistemaBanco
         public FormTransferencia()
         {
             InitializeComponent();
+            IconHelper.SetFormIcon(this);
         }
 
         private void InitializeComponent()
@@ -65,7 +66,8 @@ namespace SistemaBanco
             {
                 Location = new System.Drawing.Point(40, 55),
                 Size = new System.Drawing.Size(420, 30),
-                Font = new System.Drawing.Font("Segoe UI", 11F)
+                Font = new System.Drawing.Font("Segoe UI", 11F),
+                PlaceholderText = "Ingrese número de cuenta destino"
             };
             BankTheme.StyleTextBox(txtCuentaDestino);
 
@@ -78,6 +80,7 @@ namespace SistemaBanco
                 ForeColor = BankTheme.Success
             };
 
+            txtCuentaDestino.TextChanged += ValidarCuentaDestinoTiempoReal;
             txtCuentaDestino.Leave += ValidarCuentaDestino;
 
             Label lblMonto = new Label
@@ -93,7 +96,8 @@ namespace SistemaBanco
             {
                 Location = new System.Drawing.Point(40, 155),
                 Size = new System.Drawing.Size(420, 30),
-                Font = new System.Drawing.Font("Segoe UI", 12F)
+                Font = new System.Drawing.Font("Segoe UI", 12F),
+                PlaceholderText = "0.00"
             };
             BankTheme.StyleTextBox(txtMonto);
             txtMonto.KeyPress += (s, e) =>
@@ -119,7 +123,8 @@ namespace SistemaBanco
                 Size = new System.Drawing.Size(420, 80),
                 Multiline = true,
                 Font = BankTheme.BodyFont,
-                ScrollBars = ScrollBars.Vertical
+                ScrollBars = ScrollBars.Vertical,
+                PlaceholderText = "Descripción de la transferencia"
             };
             BankTheme.StyleTextBox(txtConcepto);
 
@@ -164,6 +169,54 @@ namespace SistemaBanco
             btnCancelar.Click += (s, e) => this.Close();
 
             this.Controls.AddRange(new Control[] { headerPanel, mainCard, btnTransferir, btnCancelar });
+        }
+
+        private void ValidarCuentaDestinoTiempoReal(object sender, EventArgs e)
+        {
+            string cuentaDestino = txtCuentaDestino.Text.Trim();
+            if (string.IsNullOrEmpty(cuentaDestino) || cuentaDestino.Length < 3)
+            {
+                lblNombreDestino.Text = "";
+                return;
+            }
+
+            try
+            {
+                string query = @"SELECT u.nombre_completo, c.numero_cuenta 
+                                FROM cuentas c 
+                                INNER JOIN usuarios u ON c.id_usuario = u.id_usuario 
+                                WHERE c.numero_cuenta LIKE @cuenta AND c.id_cuenta != @miCuenta
+                                LIMIT 5";
+                DataTable dt = Database.ExecuteQuery(query,
+                    new NpgsqlParameter("@cuenta", $"{cuentaDestino}%"),
+                    new NpgsqlParameter("@miCuenta", FormLogin.IdCuentaActual));
+
+                if (dt.Rows.Count > 0)
+                {
+                    // Si hay coincidencia exacta, mostrarla
+                    DataRow[] exactMatch = dt.Select($"numero_cuenta = '{cuentaDestino}'");
+                    if (exactMatch.Length > 0)
+                    {
+                        lblNombreDestino.Text = "✓ " + exactMatch[0]["nombre_completo"].ToString();
+                        lblNombreDestino.ForeColor = BankTheme.Success;
+                    }
+                    else
+                    {
+                        // Mostrar primera coincidencia parcial
+                        lblNombreDestino.Text = "💡 " + dt.Rows[0]["nombre_completo"].ToString() + " (" + dt.Rows[0]["numero_cuenta"].ToString() + ")";
+                        lblNombreDestino.ForeColor = System.Drawing.Color.FromArgb(59, 130, 246);
+                    }
+                }
+                else
+                {
+                    lblNombreDestino.Text = "✗ No se encontraron coincidencias";
+                    lblNombreDestino.ForeColor = BankTheme.Danger;
+                }
+            }
+            catch
+            {
+                // Si hay error, no mostrar nada
+            }
         }
 
         private void ValidarCuentaDestino(object sender, EventArgs e)

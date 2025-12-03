@@ -39,6 +39,7 @@ namespace SistemaBanco
         public FormRegistro()
         {
             InitializeComponent();
+            IconHelper.SetFormIcon(this);
         }
 
         private void InitializeComponent()

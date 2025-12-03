@@ -17,6 +17,7 @@ namespace SistemaBanco
         public FormLogin()
         {
             InitializeComponent();
+            IconHelper.SetFormIcon(this);
         }
 
         private CheckBox chkMostrarPassword;

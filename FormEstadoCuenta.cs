@@ -18,6 +18,7 @@ namespace SistemaBanco
         public FormEstadoCuenta()
         {
             InitializeComponent();
+            IconHelper.SetFormIcon(this);
             CargarEstadoCuenta();
         }
 
@@ -99,7 +100,21 @@ namespace SistemaBanco
             BankTheme.StyleButton(btnFiltrar, true);
             btnFiltrar.Click += (s, e) => CargarEstadoCuenta();
 
-            filterPanel.Controls.AddRange(new Control[] { lblFechaInicio, dtpInicio, lblFechaFin, dtpFin, btnFiltrar });
+            Button btnLimpiarFiltros = new Button
+            {
+                Text = "🔄 LIMPIAR",
+                Location = new System.Drawing.Point(870, 18),
+                Size = new System.Drawing.Size(130, 35)
+            };
+            BankTheme.StyleButton(btnLimpiarFiltros, false);
+            btnLimpiarFiltros.Click += (s, e) =>
+            {
+                dtpInicio.Value = DateTime.Now.AddMonths(-1);
+                dtpFin.Value = DateTime.Now;
+                CargarEstadoCuenta();
+            };
+
+            filterPanel.Controls.AddRange(new Control[] { lblFechaInicio, dtpInicio, lblFechaFin, dtpFin, btnFiltrar, btnLimpiarFiltros });
 
             // Panel de resumen
             Panel summaryPanel = BankTheme.CreateCard(30, 200, 1040, 100);
@@ -140,7 +155,7 @@ namespace SistemaBanco
             lblSaldoFinal = new Label
             {
                 Location = new System.Drawing.Point(800, 50),
-                Size = new System.Drawing.Size(200, 35),
+                Size = new System.Drawing.Size(220, 35),
                 Font = BankTheme.HeaderFont,
                 ForeColor = BankTheme.PrimaryBlue
             };
@@ -183,26 +198,270 @@ namespace SistemaBanco
 
             movPanel.Controls.Add(dgvMovimientos);
 
-            // Botones
-            Button btnExportar = new Button
+            // Botones de exportación
+            Panel panelBotones = new Panel
             {
-                Text = "📥 EXPORTAR PDF",
-                Location = new System.Drawing.Point(350, 690),
-                Size = new System.Drawing.Size(180, 50)
+                Location = new System.Drawing.Point(30, 660),
+                Size = new System.Drawing.Size(1040, 50),
+                BackColor = System.Drawing.Color.Transparent
             };
-            BankTheme.StyleButton(btnExportar, true);
-            btnExportar.Click += (s, e) => MessageBox.Show("Funcionalidad de exportación en desarrollo", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            Button btnExportarPDF = new Button
+            {
+                Text = "📄 PDF",
+                Location = new System.Drawing.Point(300, 5),
+                Size = new System.Drawing.Size(140, 40)
+            };
+            BankTheme.StyleButton(btnExportarPDF, false);
+            btnExportarPDF.Click += (s, e) => ExportarEstadoCuenta("PDF");
+
+            Button btnExportarWord = new Button
+            {
+                Text = "📝 Word",
+                Location = new System.Drawing.Point(450, 5),
+                Size = new System.Drawing.Size(140, 40)
+            };
+            BankTheme.StyleButton(btnExportarWord, false);
+            btnExportarWord.Click += (s, e) => ExportarEstadoCuenta("Word");
+
+            Button btnExportarExcel = new Button
+            {
+                Text = "📊 Excel",
+                Location = new System.Drawing.Point(600, 5),
+                Size = new System.Drawing.Size(140, 40)
+            };
+            BankTheme.StyleButton(btnExportarExcel, false);
+            btnExportarExcel.Click += (s, e) => ExportarEstadoCuenta("Excel");
+
+            panelBotones.Controls.AddRange(new Control[] { btnExportarPDF, btnExportarWord, btnExportarExcel });
 
             Button btnCerrar = new Button
             {
                 Text = "CERRAR",
-                Location = new System.Drawing.Point(550, 690),
-                Size = new System.Drawing.Size(180, 50)
+                Location = new System.Drawing.Point(450, 720),
+                Size = new System.Drawing.Size(200, 40)
             };
             BankTheme.StyleButton(btnCerrar, false);
             btnCerrar.Click += (s, e) => this.Close();
 
-            this.Controls.AddRange(new Control[] { headerPanel, filterPanel, summaryPanel, movPanel, btnExportar, btnCerrar });
+            this.Controls.AddRange(new Control[] { headerPanel, filterPanel, summaryPanel, movPanel, panelBotones, btnCerrar });
+        }
+
+        private void ExportarEstadoCuenta(string formato)
+        {
+            try
+            {
+                DateTime fechaInicio = dtpInicio.Value.Date;
+                DateTime fechaFin = dtpFin.Value.Date.AddDays(1).AddSeconds(-1);
+
+                // Obtener movimientos del período
+                string query = @"SELECT 
+                                    fecha::date as Fecha,
+                                    tipo as Tipo,
+                                    monto as Monto,
+                                    concepto as Concepto,
+                                    saldo_nuevo as Saldo
+                                FROM movimientos 
+                                WHERE id_cuenta = @id 
+                                AND fecha BETWEEN @inicio AND @fin
+                                ORDER BY fecha DESC";
+
+                DataTable dt = Database.ExecuteQuery(query,
+                    new NpgsqlParameter("@id", FormLogin.IdCuentaActual),
+                    new NpgsqlParameter("@inicio", fechaInicio),
+                    new NpgsqlParameter("@fin", fechaFin));
+
+                if (dt.Rows.Count == 0)
+                {
+                    MessageBox.Show("No hay datos para exportar en el período seleccionado.", "Información", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                SaveFileDialog saveDialog = new SaveFileDialog();
+                string contenido = "";
+
+                switch (formato)
+                {
+                    case "PDF":
+                        saveDialog.Filter = "Archivo HTML (*.html)|*.html";
+                        saveDialog.FileName = $"EstadoCuenta_{DateTime.Now:yyyyMMdd_HHmmss}.html";
+                        saveDialog.Title = "Exportar a PDF (se abrirá en navegador)";
+                        
+                        if (saveDialog.ShowDialog() == DialogResult.OK)
+                        {
+                            contenido = GenerarHTMLEstadoCuenta(dt);
+                            System.IO.File.WriteAllText(saveDialog.FileName, contenido);
+                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(saveDialog.FileName) { UseShellExecute = true });
+                            MessageBox.Show("Archivo HTML generado. Se abrirá en su navegador.\nDesde ahí puede guardarlo como PDF usando Ctrl+P.", 
+                                "Exportación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        break;
+
+                    case "Word":
+                        saveDialog.Filter = "Documento Word (*.doc)|*.doc";
+                        saveDialog.FileName = $"EstadoCuenta_{DateTime.Now:yyyyMMdd_HHmmss}.doc";
+                        
+                        if (saveDialog.ShowDialog() == DialogResult.OK)
+                        {
+                            contenido = GenerarWordEstadoCuenta(dt);
+                            System.IO.File.WriteAllText(saveDialog.FileName, contenido);
+                            MessageBox.Show($"Documento Word generado exitosamente en:\n{saveDialog.FileName}", 
+                                "Exportación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        break;
+
+                    case "Excel":
+                        saveDialog.Filter = "Archivo CSV (*.csv)|*.csv";
+                        saveDialog.FileName = $"EstadoCuenta_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+                        
+                        if (saveDialog.ShowDialog() == DialogResult.OK)
+                        {
+                            contenido = GenerarCSVEstadoCuenta(dt);
+                            System.IO.File.WriteAllText(saveDialog.FileName, contenido);
+                            MessageBox.Show($"Archivo CSV generado exitosamente en:\n{saveDialog.FileName}\n\nPuede abrirlo con Excel.", 
+                                "Exportación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al exportar: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private string GenerarHTMLEstadoCuenta(DataTable dt)
+        {
+            string html = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>Estado de Cuenta</title>
+    <style>
+        body {{ font-family: 'Segoe UI', Arial, sans-serif; margin: 40px; }}
+        h1 {{ color: #1e40af; text-align: center; }}
+        .info {{ background: #f3f4f6; padding: 15px; margin: 20px 0; border-radius: 8px; }}
+        .resumen {{ background: #dbeafe; padding: 15px; margin: 20px 0; border-radius: 8px; }}
+        table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
+        th {{ background: #1e40af; color: white; padding: 12px; text-align: left; }}
+        td {{ padding: 10px; border-bottom: 1px solid #e5e7eb; }}
+        tr:nth-child(even) {{ background: #f9fafb; }}
+        .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px; }}
+    </style>
+</head>
+<body>
+    <h1>🏦 Estado de Cuenta</h1>
+    <div class='info'>
+        <strong>Usuario:</strong> {FormLogin.NombreUsuario}<br>
+        <strong>Período:</strong> {dtpInicio.Value:dd/MM/yyyy} - {dtpFin.Value:dd/MM/yyyy}<br>
+        <strong>Fecha de generación:</strong> {DateTime.Now:dd/MM/yyyy HH:mm:ss}
+    </div>
+    <div class='resumen'>
+        <h3>Resumen del Período</h3>
+        {lblSaldoInicial.Text}<br>
+        {lblTotalIngresos.Text}<br>
+        {lblTotalEgresos.Text}<br>
+        <strong>{lblSaldoFinal.Text}</strong>
+    </div>
+    <h3>Detalle de Movimientos</h3>
+    <table>
+        <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Monto</th>
+            <th>Concepto</th>
+            <th>Saldo</th>
+        </tr>";
+
+            foreach (DataRow row in dt.Rows)
+            {
+                html += $@"
+        <tr>
+            <td>{Convert.ToDateTime(row["Fecha"]):dd/MM/yyyy}</td>
+            <td>{row["Tipo"]}</td>
+            <td>${Convert.ToDecimal(row["Monto"]):N2}</td>
+            <td>{row["Concepto"]}</td>
+            <td>${Convert.ToDecimal(row["Saldo"]):N2}</td>
+        </tr>";
+            }
+
+            html += @"
+    </table>
+    <div class='footer'>
+        © 2025 Módulo Banco - Documento Confidencial
+    </div>
+</body>
+</html>";
+
+            return html;
+        }
+
+        private string GenerarWordEstadoCuenta(DataTable dt)
+        {
+            string doc = $@"
+MÓDULO BANCO - ESTADO DE CUENTA
+================================
+
+Usuario: {FormLogin.NombreUsuario}
+Período: {dtpInicio.Value:dd/MM/yyyy} - {dtpFin.Value:dd/MM/yyyy}
+Fecha de generación: {DateTime.Now:dd/MM/yyyy HH:mm:ss}
+
+RESUMEN DEL PERÍODO
+-------------------
+{lblSaldoInicial.Text}
+{lblTotalIngresos.Text}
+{lblTotalEgresos.Text}
+{lblSaldoFinal.Text}
+
+DETALLE DE MOVIMIENTOS
+----------------------
+
+";
+
+            foreach (DataRow row in dt.Rows)
+            {
+                doc += $@"
+Fecha: {Convert.ToDateTime(row["Fecha"]):dd/MM/yyyy}
+Tipo: {row["Tipo"]}
+Monto: ${Convert.ToDecimal(row["Monto"]):N2}
+Concepto: {row["Concepto"]}
+Saldo: ${Convert.ToDecimal(row["Saldo"]):N2}
+----------------------------------------
+";
+            }
+
+            doc += @"
+
+© 2025 Módulo Banco - Documento Confidencial
+";
+
+            return doc;
+        }
+
+        private string GenerarCSVEstadoCuenta(DataTable dt)
+        {
+            string csv = "# ESTADO DE CUENTA\n";
+            csv += $"# Usuario: {FormLogin.NombreUsuario}\n";
+            csv += $"# Período: {dtpInicio.Value:dd/MM/yyyy} - {dtpFin.Value:dd/MM/yyyy}\n";
+            csv += $"# Fecha de generación: {DateTime.Now:dd/MM/yyyy HH:mm:ss}\n";
+            csv += $"# {lblSaldoInicial.Text.Replace("\n", " ")}\n";
+            csv += $"# {lblTotalIngresos.Text.Replace("\n", " ")}\n";
+            csv += $"# {lblTotalEgresos.Text.Replace("\n", " ")}\n";
+            csv += $"# {lblSaldoFinal.Text.Replace("\n", " ")}\n\n";
+            csv += "Fecha,Tipo,Monto,Concepto,Saldo\n";
+
+            foreach (DataRow row in dt.Rows)
+            {
+                csv += $"{Convert.ToDateTime(row["Fecha"]):dd/MM/yyyy},";
+                csv += $"\"{row["Tipo"]}\",";
+                csv += $"{Convert.ToDecimal(row["Monto"]):N2},";
+                csv += $"\"{row["Concepto"]}\",";
+                csv += $"{Convert.ToDecimal(row["Saldo"]):N2}\n";
+            }
+
+            return csv;
         }
 
         private void CargarEstadoCuenta()

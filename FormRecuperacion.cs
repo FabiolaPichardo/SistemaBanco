@@ -30,6 +30,7 @@ namespace SistemaBanco
         public FormRecuperacion()
         {
             InitializeComponent();
+            IconHelper.SetFormIcon(this);
         }
 
         private void InitializeComponent()

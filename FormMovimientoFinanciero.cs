@@ -26,6 +26,7 @@ namespace SistemaBanco
         public FormMovimientoFinanciero()
         {
             InitializeComponent();
+            IconHelper.SetFormIcon(this);
             GenerarFolio();
             CargarDatosIniciales();
         }
@@ -33,7 +34,7 @@ namespace SistemaBanco
         private void InitializeComponent()
         {
             this.Text = "Módulo Banco - Registro de Movimientos Financieros";
-            this.ClientSize = new System.Drawing.Size(900, 800);
+            this.ClientSize = new System.Drawing.Size(900, 750);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = BankTheme.LightGray;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -44,7 +45,7 @@ namespace SistemaBanco
             Panel headerPanel = new Panel
             {
                 Location = new System.Drawing.Point(0, 0),
-                Size = new System.Drawing.Size(900, 100),
+                Size = new System.Drawing.Size(900, 90),
                 BackColor = BankTheme.PrimaryBlue
             };
 
@@ -69,17 +70,7 @@ namespace SistemaBanco
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
-            Label lblSubtitulo = new Label
-            {
-                Text = "Sistema de Control y Auditoría",
-                Location = new System.Drawing.Point(200, 80),
-                Size = new System.Drawing.Size(500, 15),
-                Font = BankTheme.SmallFont,
-                ForeColor = BankTheme.AccentGold,
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-
-            headerPanel.Controls.AddRange(new Control[] { lblLogo, lblTitulo, lblSubtitulo });
+            headerPanel.Controls.AddRange(new Control[] { lblLogo, lblTitulo });
 
             // SECCIÓN 1: DATOS GENERALES
             Panel seccionGenerales = BankTheme.CreateCard(50, 120, 800, 180);
@@ -111,7 +102,7 @@ namespace SistemaBanco
                 Font = BankTheme.BodyFont
             };
             cmbTipoOperacion.Items.AddRange(new string[] { 
-                "CARGO - Egreso (Pago a proveedores, gastos)", 
+                "CARGO - Egreso (Pagos, gastos)", 
                 "ABONO - Ingreso (Depósitos de clientes)" 
             });
 
@@ -203,9 +194,11 @@ namespace SistemaBanco
                 Location = new System.Drawing.Point(420, 75),
                 Size = new System.Drawing.Size(350, 30),
                 Font = BankTheme.BodyFont,
-                MaxLength = 20
+                MaxLength = 20,
+                PlaceholderText = "Ingrese número de cuenta"
             };
             BankTheme.StyleTextBox(txtCuentaBeneficiaria);
+            txtCuentaBeneficiaria.TextChanged += TxtCuentaBeneficiaria_TextChanged;
 
             // Beneficiario (BAN-26)
             Label lblBeneficiario = new Label
@@ -222,7 +215,8 @@ namespace SistemaBanco
                 Location = new System.Drawing.Point(30, 140),
                 Size = new System.Drawing.Size(740, 30),
                 Font = BankTheme.BodyFont,
-                MaxLength = 100
+                MaxLength = 100,
+                PlaceholderText = "Nombre del beneficiario (se autocompletará al ingresar cuenta)"
             };
             BankTheme.StyleTextBox(txtBeneficiario);
 
@@ -240,7 +234,8 @@ namespace SistemaBanco
             {
                 Location = new System.Drawing.Point(30, 205),
                 Size = new System.Drawing.Size(200, 30),
-                Font = BankTheme.BodyFont
+                Font = BankTheme.BodyFont,
+                PlaceholderText = "0.00"
             };
             BankTheme.StyleTextBox(txtImporte);
             txtImporte.KeyPress += (s, e) =>
@@ -286,7 +281,8 @@ namespace SistemaBanco
                 Location = new System.Drawing.Point(440, 205),
                 Size = new System.Drawing.Size(330, 30),
                 Font = BankTheme.BodyFont,
-                MaxLength = 200
+                MaxLength = 200,
+                PlaceholderText = "Descripción del movimiento"
             };
             BankTheme.StyleTextBox(txtConcepto);
 
@@ -305,7 +301,8 @@ namespace SistemaBanco
                 Location = new System.Drawing.Point(30, 270),
                 Size = new System.Drawing.Size(740, 30),
                 Font = BankTheme.BodyFont,
-                MaxLength = 50
+                MaxLength = 50,
+                PlaceholderText = "Opcional - Se generará automáticamente si se deja vacío"
             };
             BankTheme.StyleTextBox(txtReferencia);
 
@@ -393,7 +390,7 @@ namespace SistemaBanco
             Button btnGuardar = new Button
             {
                 Text = "✓ GUARDAR",
-                Location = new System.Drawing.Point(300, 820),
+                Location = new System.Drawing.Point(300, 680),
                 Size = new System.Drawing.Size(150, 45),
                 BackColor = BankTheme.Success,
                 ForeColor = Color.White,
@@ -407,7 +404,7 @@ namespace SistemaBanco
             Button btnCancelar = new Button
             {
                 Text = "✗ CANCELAR",
-                Location = new System.Drawing.Point(470, 820),
+                Location = new System.Drawing.Point(470, 680),
                 Size = new System.Drawing.Size(150, 45),
                 BackColor = Color.Gray,
                 ForeColor = Color.White,
@@ -418,14 +415,6 @@ namespace SistemaBanco
             btnCancelar.FlatAppearance.BorderSize = 0;
             btnCancelar.Click += (s, e) => this.Close();
 
-            // PIE DE PANTALLA (BAN-24)
-            Panel footerPanel = new Panel
-            {
-                Location = new System.Drawing.Point(0, 880),
-                Size = new System.Drawing.Size(900, 40),
-                BackColor = Color.FromArgb(240, 240, 240)
-            };
-
             lblFechaHoraSistema = new Label
             {
                 Location = new System.Drawing.Point(20, 10),
@@ -435,12 +424,45 @@ namespace SistemaBanco
                 TextAlign = ContentAlignment.MiddleLeft
             };
 
-            footerPanel.Controls.Add(lblFechaHoraSistema);
-
             this.Controls.AddRange(new Control[] { 
                 headerPanel, seccionGenerales, seccionTransaccion, seccionControl,
-                btnGuardar, btnCancelar, footerPanel
+                btnGuardar, btnCancelar
             });
+        }
+
+        private void TxtCuentaBeneficiaria_TextChanged(object? sender, EventArgs e)
+        {
+            string cuentaBuscar = txtCuentaBeneficiaria.Text.Trim();
+            if (string.IsNullOrEmpty(cuentaBuscar) || cuentaBuscar.Length < 3)
+            {
+                txtBeneficiario.Text = "";
+                return;
+            }
+
+            try
+            {
+                string query = @"SELECT u.nombre_completo, c.numero_cuenta 
+                                FROM cuentas c 
+                                INNER JOIN usuarios u ON c.id_usuario = u.id_usuario 
+                                WHERE c.numero_cuenta LIKE @cuenta 
+                                LIMIT 1";
+                DataTable dt = Database.ExecuteQuery(query, 
+                    new NpgsqlParameter("@cuenta", $"{cuentaBuscar}%"));
+
+                if (dt.Rows.Count > 0)
+                {
+                    txtBeneficiario.Text = dt.Rows[0]["nombre_completo"].ToString();
+                    txtBeneficiario.ForeColor = BankTheme.Success;
+                }
+                else
+                {
+                    txtBeneficiario.ForeColor = BankTheme.TextSecondary;
+                }
+            }
+            catch
+            {
+                // Si hay error, no hacer nada
+            }
         }
 
         private void GenerarFolio()
@@ -453,13 +475,25 @@ namespace SistemaBanco
 
         private void CargarDatosIniciales()
         {
-            // Usuario actual (BAN-26)
+            // Usuario actual (BAN-26) - Mostrar nombre completo
             if (lblUsuario != null)
-                lblUsuario.Text = FormLogin.NombreUsuario;
+            {
+                try
+                {
+                    string query = "SELECT nombre_completo FROM usuarios WHERE id_usuario = @id";
+                    DataTable dt = Database.ExecuteQuery(query, new NpgsqlParameter("@id", FormLogin.IdUsuarioActual));
+                    if (dt.Rows.Count > 0)
+                        lblUsuario.Text = dt.Rows[0]["nombre_completo"].ToString();
+                    else
+                        lblUsuario.Text = FormLogin.NombreUsuario;
+                }
+                catch
+                {
+                    lblUsuario.Text = FormLogin.NombreUsuario;
+                }
+            }
 
-            // Fecha/Hora sistema (BAN-24)
-            if (lblFechaHoraSistema != null)
-                lblFechaHoraSistema.Text = $"Sistema: {DateTime.Now:dd/MM/yyyy HH:mm:ss} | Usuario: {FormLogin.NombreUsuario} | Versión: 1.0";
+
 
             // Cargar cuentas ordenantes (BAN-26)
             if (cmbCuentaOrdenante != null)
@@ -552,6 +586,11 @@ namespace SistemaBanco
             {
                 string tipoOperacion = cmbTipoOperacion.SelectedItem.ToString().StartsWith("CARGO") ? "CARGO" : "ABONO";
                 
+                // Generar referencia automática si está vacía
+                string referencia = string.IsNullOrWhiteSpace(txtReferencia.Text) 
+                    ? $"REF-{DateTime.Now:yyyyMMddHHmmss}" 
+                    : txtReferencia.Text.Trim();
+                
                 // Insertar movimiento financiero (BAN-23, BAN-26)
                 string query = @"INSERT INTO movimientos_financieros 
                                 (folio, fecha_hora, tipo_operacion, cuenta_ordenante, cuenta_beneficiaria, 
@@ -571,7 +610,7 @@ namespace SistemaBanco
                     new NpgsqlParameter("@importe", importe),
                     new NpgsqlParameter("@moneda", cmbMoneda.SelectedItem.ToString()),
                     new NpgsqlParameter("@concepto", txtConcepto.Text.Trim()),
-                    new NpgsqlParameter("@referencia", txtReferencia.Text.Trim()),
+                    new NpgsqlParameter("@referencia", referencia),
                     new NpgsqlParameter("@cuentaCont", cmbCuentaContable.SelectedItem.ToString()),
                     new NpgsqlParameter("@estado", "PENDIENTE"),
                     new NpgsqlParameter("@usuario", FormLogin.IdUsuarioActual));
