@@ -33,7 +33,9 @@ namespace SistemaBanco
                 "RegistrarMovimientos",
                 "ConsultarClientes",
                 "ExportarCompleto", // PDF, Word, Excel
-                "FiltrosAvanzados"
+                "FiltrosAvanzados",
+                "AutorizarDivisas", // Autorización de operaciones en divisas
+                "ConsultarSolicitudesDivisas"
             },
             ["Gerente"] = new HashSet<string>
             {
@@ -48,7 +50,10 @@ namespace SistemaBanco
                 "AprobarTransferencias",
                 "ReportesGerenciales",
                 "ExportarCompleto",
-                "FiltrosAvanzados"
+                "FiltrosAvanzados",
+                "AutorizarDivisas",
+                "ConsultarSolicitudesDivisas",
+                "ConfigurarRolesDivisas"
             },
             ["Administrador"] = new HashSet<string>
             {
@@ -66,7 +71,10 @@ namespace SistemaBanco
                 "AdministrarUsuarios",
                 "ConfiguracionSistema",
                 "ExportarCompleto",
-                "FiltrosAvanzados"
+                "FiltrosAvanzados",
+                "AutorizarDivisas",
+                "ConsultarSolicitudesDivisas",
+                "ConfigurarRolesDivisas"
             }
         };
 
@@ -115,6 +123,21 @@ namespace SistemaBanco
         public static bool PuedeFiltrosAvanzados(string rol)
         {
             return TienePermiso(rol, "FiltrosAvanzados");
+        }
+
+        public static bool PuedeAutorizarDivisas(string rol)
+        {
+            return TienePermiso(rol, "AutorizarDivisas");
+        }
+
+        public static bool PuedeConsultarSolicitudesDivisas(string rol)
+        {
+            return TienePermiso(rol, "ConsultarSolicitudesDivisas");
+        }
+
+        public static bool PuedeConfigurarRolesDivisas(string rol)
+        {
+            return TienePermiso(rol, "ConfigurarRolesDivisas");
         }
     }
 }

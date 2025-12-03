@@ -13,7 +13,7 @@ namespace SistemaBanco
         private void InitializeComponent()
         {
             this.Text = "Módulo Banco - Portal de Cliente";
-            this.ClientSize = new System.Drawing.Size(1000, 700);
+            this.ClientSize = new System.Drawing.Size(1000, 900);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = BankTheme.LightGray;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -88,11 +88,14 @@ namespace SistemaBanco
             Panel cardEstado = CreateMenuCard(360, 390, 280, 180, "📄", "Estado de Cuenta", "Generar reporte detallado", "EstadoCuenta");
             Panel cardAdminUsuarios = CreateMenuCard(670, 390, 280, 180, "👥", "Admin. Usuarios", "Gestionar usuarios del sistema", "AdministrarUsuarios");
 
+            // Tercera fila - Módulos especializados (centrado)
+            Panel cardDivisas = CreateMenuCard(360, 600, 280, 180, "💱", "Autorización Divisas", "Gestionar operaciones en moneda extranjera", "ConsultarSolicitudesDivisas");
+
             // Botón cerrar sesión
             Button btnSalir = new Button
             {
                 Text = "🚪 CERRAR SESIÓN",
-                Location = new System.Drawing.Point(400, 610),
+                Location = new System.Drawing.Point(400, 820),
                 Size = new System.Drawing.Size(200, 50)
             };
             BankTheme.StyleButton(btnSalir, false);
@@ -104,9 +107,10 @@ namespace SistemaBanco
             AsignarEventoCard(cardHistorial, () => new FormRevisionMovimientos().ShowDialog());
             AsignarEventoCard(cardEstado, () => new FormEstadoCuenta().ShowDialog());
             AsignarEventoCard(cardAdminUsuarios, () => new FormAdministracionUsuarios().ShowDialog());
+            AsignarEventoCard(cardDivisas, () => new FormAutorizacionDivisas().ShowDialog());
             btnSalir.Click += (s, e) => this.Close();
 
-            this.Controls.AddRange(new Control[] { headerPanel, lblTitulo, cardSaldo, cardMovimiento, cardTransferencia, cardHistorial, cardEstado, cardAdminUsuarios, btnSalir });
+            this.Controls.AddRange(new Control[] { headerPanel, lblTitulo, cardSaldo, cardMovimiento, cardTransferencia, cardHistorial, cardEstado, cardAdminUsuarios, cardDivisas, btnSalir });
         }
 
         private void AsignarEventoCard(Panel card, Action action)
