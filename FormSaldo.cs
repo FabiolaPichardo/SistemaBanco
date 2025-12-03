@@ -40,28 +40,34 @@ namespace SistemaBanco
             Panel headerPanel = new Panel
             {
                 Location = new System.Drawing.Point(0, 0),
-                Size = new System.Drawing.Size(700, 80),
+                Size = new System.Drawing.Size(900, 90),
                 BackColor = BankTheme.PrimaryBlue
             };
 
             // Botón de inicio
             HomeButton.AddToForm(this, headerPanel);
 
+            string titulo = puedeVerHistorico ? "REVISIÓN DE SALDOS HISTÓRICOS" : "REVISIÓN DE SALDO ACTUAL";
+
+            // Calcular posición centrada para el ícono y título
+            // Ancho total del header: 900px
+            // Ícono: 50px, espacio: 10px, título: ~500px
+            // Total conjunto: ~560px
+            // Centro real considerando todo: (900 - 560) / 2 + ajuste = 250px
+            
             Label lblLogo = new Label
             {
                 Text = "🏦",
-                Location = new System.Drawing.Point(250, 15),
+                Location = new System.Drawing.Point(250, 20),
                 Size = new System.Drawing.Size(50, 50),
                 Font = new Font("Segoe UI", 32F),
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
-            string titulo = puedeVerHistorico ? "REVISIÓN DE SALDOS HISTÓRICOS" : "REVISIÓN DE SALDO ACTUAL";
-
             Label lblTitulo = new Label
             {
                 Text = titulo,
-                Location = new System.Drawing.Point(310, 25),
+                Location = new System.Drawing.Point(310, 30),
                 Size = new System.Drawing.Size(500, 30),
                 Font = BankTheme.SubtitleFont,
                 ForeColor = BankTheme.White,
@@ -71,21 +77,21 @@ namespace SistemaBanco
             headerPanel.Controls.AddRange(new Control[] { lblLogo, lblTitulo });
 
             // Card principal - Saldo
-            Panel mainCard = BankTheme.CreateCard(50, 100, 600, 280);
+            Panel mainCard = BankTheme.CreateCard(50, 110, 800, 300);
 
             Label lblCuentaLabel = new Label
             {
                 Text = "Número de Cuenta",
-                Location = new System.Drawing.Point(30, 20),
-                Size = new System.Drawing.Size(250, 20),
+                Location = new System.Drawing.Point(40, 25),
+                Size = new System.Drawing.Size(300, 20),
                 Font = BankTheme.BodyFont,
                 ForeColor = BankTheme.TextSecondary
             };
 
             lblCuenta = new Label
             {
-                Location = new System.Drawing.Point(30, 45),
-                Size = new System.Drawing.Size(250, 25),
+                Location = new System.Drawing.Point(40, 50),
+                Size = new System.Drawing.Size(300, 25),
                 Font = new Font("Segoe UI", 12F, FontStyle.Bold),
                 ForeColor = BankTheme.PrimaryBlue
             };
@@ -93,32 +99,32 @@ namespace SistemaBanco
             Label lblTipoCuentaLabel = new Label
             {
                 Text = "Tipo de Cuenta",
-                Location = new System.Drawing.Point(320, 20),
-                Size = new System.Drawing.Size(250, 20),
+                Location = new System.Drawing.Point(420, 25),
+                Size = new System.Drawing.Size(300, 20),
                 Font = BankTheme.BodyFont,
                 ForeColor = BankTheme.TextSecondary
             };
 
             lblTipoCuenta = new Label
             {
-                Location = new System.Drawing.Point(320, 45),
-                Size = new System.Drawing.Size(250, 25),
+                Location = new System.Drawing.Point(420, 50),
+                Size = new System.Drawing.Size(300, 25),
                 Font = new Font("Segoe UI", 12F, FontStyle.Bold),
                 ForeColor = BankTheme.PrimaryBlue
             };
 
             Panel separador = new Panel
             {
-                Location = new System.Drawing.Point(30, 85),
-                Size = new System.Drawing.Size(540, 2),
+                Location = new System.Drawing.Point(40, 95),
+                Size = new System.Drawing.Size(720, 2),
                 BackColor = BankTheme.LightGray
             };
 
             Label lblSaldoLabel = new Label
             {
                 Text = "Saldo Disponible",
-                Location = new System.Drawing.Point(30, 105),
-                Size = new System.Drawing.Size(540, 25),
+                Location = new System.Drawing.Point(40, 115),
+                Size = new System.Drawing.Size(720, 25),
                 Font = BankTheme.HeaderFont,
                 ForeColor = BankTheme.TextSecondary,
                 TextAlign = ContentAlignment.MiddleCenter
@@ -126,16 +132,16 @@ namespace SistemaBanco
 
             lblIndicadorEstado = new Label
             {
-                Location = new System.Drawing.Point(30, 135),
-                Size = new System.Drawing.Size(540, 30),
+                Location = new System.Drawing.Point(40, 145),
+                Size = new System.Drawing.Size(720, 30),
                 Font = new Font("Segoe UI", 16F),
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
             lblSaldo = new Label
             {
-                Location = new System.Drawing.Point(30, 170),
-                Size = new System.Drawing.Size(540, 50),
+                Location = new System.Drawing.Point(40, 180),
+                Size = new System.Drawing.Size(720, 50),
                 Font = BankTheme.MoneyFont,
                 ForeColor = BankTheme.Success,
                 TextAlign = ContentAlignment.MiddleCenter
@@ -144,8 +150,8 @@ namespace SistemaBanco
             lblActualizacion = new Label
             {
                 Text = $"Última actualización: {DateTime.Now:dd/MM/yyyy HH:mm:ss}",
-                Location = new System.Drawing.Point(30, 235),
-                Size = new System.Drawing.Size(540, 20),
+                Location = new System.Drawing.Point(40, 245),
+                Size = new System.Drawing.Size(720, 20),
                 Font = BankTheme.SmallFont,
                 ForeColor = BankTheme.TextSecondary,
                 TextAlign = ContentAlignment.MiddleCenter
@@ -165,7 +171,7 @@ namespace SistemaBanco
             }
 
             // Panel de controles
-            int controlPanelY = puedeVerHistorico ? 500 : 400;
+            int controlPanelY = puedeVerHistorico ? 500 : 430;
             Panel controlPanel = new Panel
             {
                 Location = new Point(50, controlPanelY),
@@ -176,8 +182,8 @@ namespace SistemaBanco
             CheckBox chkAutoActualizar = new CheckBox
             {
                 Text = "Actualización automática (cada 30s)",
-                Location = new Point(20, 15),
-                Size = new Size(250, 30),
+                Location = new Point(0, 15),
+                Size = new Size(280, 30),
                 Font = BankTheme.BodyFont,
                 Checked = true
             };
@@ -193,7 +199,7 @@ namespace SistemaBanco
             Button btnActualizar = new Button
             {
                 Text = "🔄 Refrescar",
-                Location = new Point(290, 10),
+                Location = new Point(300, 10),
                 Size = new Size(140, 40),
                 Font = BankTheme.BodyFont
             };
@@ -205,8 +211,8 @@ namespace SistemaBanco
             
             Button btnExportarPDF = new Button
             {
-                Text = "📄 Exportar PDF",
-                Location = new Point(450, 10),
+                Text = "📄 Exportar",
+                Location = new Point(460, 10),
                 Size = new Size(140, 40),
                 Font = BankTheme.BodyFont
             };
@@ -220,7 +226,7 @@ namespace SistemaBanco
                 Button btnExportarWord = new Button
                 {
                     Text = "📝 Word",
-                    Location = new Point(610, 10),
+                    Location = new Point(620, 10),
                     Size = new Size(90, 40),
                     Font = BankTheme.BodyFont
                 };
@@ -231,7 +237,7 @@ namespace SistemaBanco
                 Button btnExportarExcel = new Button
                 {
                     Text = "📊 Excel",
-                    Location = new Point(710, 10),
+                    Location = new Point(720, 10),
                     Size = new Size(90, 40),
                     Font = BankTheme.BodyFont
                 };
@@ -241,10 +247,11 @@ namespace SistemaBanco
             }
 
             // Botones inferiores
+            int btnCerrarY = puedeVerHistorico ? 680 : 580;
             Button btnCerrar = new Button
             {
                 Text = "CERRAR",
-                Location = new Point(250, 580),
+                Location = new Point(350, btnCerrarY),
                 Size = new Size(200, 45)
             };
             BankTheme.StyleButton(btnCerrar, false);

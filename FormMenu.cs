@@ -39,7 +39,7 @@ namespace SistemaBanco
             Label lblBienvenida = new Label
             {
                 Text = $"Bienvenido, {FormLogin.NombreUsuario}",
-                Location = new System.Drawing.Point(650, 20),
+                Location = new System.Drawing.Point(650, 15),
                 Size = new System.Drawing.Size(320, 25),
                 Font = BankTheme.HeaderFont,
                 ForeColor = BankTheme.AccentGold,
@@ -58,8 +58,8 @@ namespace SistemaBanco
 
             Label lblFecha = new Label
             {
-                Text = DateTime.Now.ToString("dddd, dd MMMM yyyy"),
-                Location = new System.Drawing.Point(650, 55),
+                Text = DateTime.Now.ToString("dddd, dd 'de' MMMM 'de' yyyy"),
+                Location = new System.Drawing.Point(650, 70),
                 Size = new System.Drawing.Size(320, 20),
                 Font = BankTheme.SmallFont,
                 ForeColor = BankTheme.White,

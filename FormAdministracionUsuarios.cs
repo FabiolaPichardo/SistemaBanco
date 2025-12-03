@@ -27,7 +27,8 @@ namespace SistemaBanco
         public FormAdministracionUsuarios()
         {
             InitializeComponent();
-            CargarUsuarios();
+            // Cargar usuarios después de que todos los controles estén inicializados
+            this.Load += (s, e) => CargarUsuarios();
         }
 
         private void InitializeComponent()
@@ -353,7 +354,9 @@ namespace SistemaBanco
             };
             dgvUsuarios.Columns.Add(btnEliminar);
 
-            // Evento de clic en botones
+            // Remover el manejador de eventos anterior si existe para evitar duplicados
+            dgvUsuarios.CellContentClick -= DgvUsuarios_CellContentClick;
+            // Agregar el evento de clic en botones
             dgvUsuarios.CellContentClick += DgvUsuarios_CellContentClick;
         }
 
