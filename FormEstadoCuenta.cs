@@ -271,50 +271,16 @@ namespace SistemaBanco
                     return;
                 }
 
-                SaveFileDialog saveDialog = new SaveFileDialog();
-                string contenido = "";
-
                 switch (formato)
                 {
                     case "PDF":
-                        saveDialog.Filter = "Archivo HTML (*.html)|*.html";
-                        saveDialog.FileName = $"EstadoCuenta_{DateTime.Now:yyyyMMdd_HHmmss}.html";
-                        saveDialog.Title = "Exportar a PDF (se abrirá en navegador)";
-
-                        if (saveDialog.ShowDialog() == DialogResult.OK)
-                        {
-                            contenido = GenerarHTMLEstadoCuenta(dt);
-                            System.IO.File.WriteAllText(saveDialog.FileName, contenido);
-                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(saveDialog.FileName) { UseShellExecute = true });
-                            MessageBox.Show("Archivo HTML generado. Se abrirá en su navegador.\nDesde ahí puede guardarlo como PDF usando Ctrl+P.", 
-                                "Exportación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
+                        ExportHelper.ExportarPDF(dt, "Estado de Cuenta", "Estado_Cuenta");
                         break;
-
                     case "Word":
-                        saveDialog.Filter = "Documento Word (*.doc)|*.doc";
-                        saveDialog.FileName = $"EstadoCuenta_{DateTime.Now:yyyyMMdd_HHmmss}.doc";
-
-                        if (saveDialog.ShowDialog() == DialogResult.OK)
-                        {
-                            contenido = GenerarWordEstadoCuenta(dt);
-                            System.IO.File.WriteAllText(saveDialog.FileName, contenido);
-                            MessageBox.Show($"Documento Word generado exitosamente en:\n{saveDialog.FileName}", 
-                                "Exportación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
+                        ExportHelper.ExportarWord(dt, "Estado de Cuenta", "Estado_Cuenta");
                         break;
-
                     case "Excel":
-                        saveDialog.Filter = "Archivo CSV (*.csv)|*.csv";
-                        saveDialog.FileName = $"EstadoCuenta_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
-
-                        if (saveDialog.ShowDialog() == DialogResult.OK)
-                        {
-                            contenido = GenerarCSVEstadoCuenta(dt);
-                            System.IO.File.WriteAllText(saveDialog.FileName, contenido);
-                            MessageBox.Show($"Archivo CSV generado exitosamente en:\n{saveDialog.FileName}\n\nPuede abrirlo con Excel.", 
-                                "Exportación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
+                        ExportHelper.ExportarExcel(dt, "Estado de Cuenta", "Estado_Cuenta");
                         break;
                 }
             }

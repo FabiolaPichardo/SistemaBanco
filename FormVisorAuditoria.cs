@@ -454,7 +454,6 @@ namespace SistemaBanco
         {
             try
             {
-
                 StringBuilder whereClause = new StringBuilder("WHERE 1=1");
 
                 whereClause.Append($" AND fecha_hora >= '{dtpFechaInicio.Value:yyyy-MM-dd 00:00:00}'");
@@ -475,7 +474,14 @@ namespace SistemaBanco
                 }
 
                 string query = $@"
-                    SELECT * FROM auditoria_sistema
+                    SELECT 
+                        fecha_hora as ""Fecha/Hora"",
+                        usuario as ""Usuario"",
+                        accion as ""Acción"",
+                        detalles as ""Detalles"",
+                        ip_address as ""IP"",
+                        nombre_equipo as ""Equipo""
+                    FROM auditoria_sistema
                     {whereClause}
                     ORDER BY fecha_hora DESC";
 
@@ -488,36 +494,21 @@ namespace SistemaBanco
                     return;
                 }
 
-                string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                string fileName = "";
-                string content = "";
+                AuditLogger.Log(AuditLogger.AuditAction.ExportacionDatos,
+                    $"Exportación de auditoría a {formato}: {dt.Rows.Count} registros");
 
                 switch (formato)
                 {
                     case "PDF":
-                        fileName = $"auditoria_{timestamp}.txt";
-                        content = GenerarContenidoPDF(dt);
+                        ExportHelper.ExportarPDF(dt, "Auditoría del Sistema", "Auditoria_Sistema");
                         break;
                     case "Word":
-                        fileName = $"auditoria_{timestamp}.doc";
-                        content = GenerarContenidoWord(dt);
+                        ExportHelper.ExportarWord(dt, "Auditoría del Sistema", "Auditoria_Sistema");
                         break;
                     case "Excel":
-                        fileName = $"auditoria_{timestamp}.csv";
-                        content = GenerarContenidoExcel(dt);
+                        ExportHelper.ExportarExcel(dt, "Auditoría del Sistema", "Auditoria_Sistema");
                         break;
                 }
-
-                string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), fileName);
-                File.WriteAllText(filePath, content, Encoding.UTF8);
-
-                AuditLogger.Log(AuditLogger.AuditAction.ExportacionDatos,
-                    $"Exportación de auditoría a {formato}: {dt.Rows.Count} registros");
-
-                MessageBox.Show($"Archivo exportado exitosamente:\n{filePath}",
-                    "Exportación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                System.Diagnostics.Process.Start("notepad.exe", filePath);
             }
             catch (Exception ex)
             {

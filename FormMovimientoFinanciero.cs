@@ -34,7 +34,7 @@ namespace SistemaBanco
         private void InitializeComponent()
         {
             this.Text = "Módulo Banco - Registro de Movimientos Financieros";
-            this.ClientSize = new System.Drawing.Size(900, 900);
+            this.ClientSize = new System.Drawing.Size(900, 700);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = BankTheme.LightGray;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -373,28 +373,18 @@ namespace SistemaBanco
             {
                 Text = "✓ GUARDAR",
                 Location = new System.Drawing.Point(300, 820),
-                Size = new System.Drawing.Size(150, 45),
-                BackColor = BankTheme.Success,
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Size = new System.Drawing.Size(150, 45)
             };
-            btnGuardar.FlatAppearance.BorderSize = 0;
+            BankTheme.StyleButton(btnGuardar, true);
             btnGuardar.Click += BtnGuardar_Click;
 
             Button btnCancelar = new Button
             {
                 Text = "✗ CANCELAR",
                 Location = new System.Drawing.Point(470, 820),
-                Size = new System.Drawing.Size(150, 45),
-                BackColor = Color.Gray,
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Size = new System.Drawing.Size(150, 45)
             };
-            btnCancelar.FlatAppearance.BorderSize = 0;
+            BankTheme.StyleButton(btnCancelar, false);
             btnCancelar.Click += (s, e) => this.Close();
 
             lblFechaHoraSistema = new Label

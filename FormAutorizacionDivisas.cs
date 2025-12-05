@@ -50,11 +50,12 @@ namespace SistemaBanco
         private void InitializeComponent()
         {
             this.Text = "Módulo Banco - Autorización de Operaciones en Divisas";
-            this.ClientSize = new Size(1400, 800);
+            this.ClientSize = new Size(1400, 750);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = BankTheme.LightGray;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
+            this.AutoScroll = true;
 
             Panel headerPanel = new Panel
             {
@@ -352,21 +353,22 @@ namespace SistemaBanco
             BankTheme.StyleButton(btnExportarExcel, false);
             btnExportarExcel.Click += (s, e) => ExportarReporte("Excel");
 
-            bottomPanel.Controls.AddRange(new Control[] {
-                lblTotalSolicitudes, btnExportarPDF, btnExportarWord, btnExportarExcel
-            });
-
             Button btnCerrar = new Button
             {
                 Text = "CERRAR",
-                Location = new Point(600, 730), // (1400 - 200) / 2 = 600, Y=730 para ventana de 800px
-                Size = new Size(200, 45)
+                Location = new Point(750, 10), // (1400 - 200) / 2 = 600, Y=730 para ventana de 800px
+                Size = new Size(140, 40),
+                Font = BankTheme.BodyFont
             };
             BankTheme.StyleButton(btnCerrar, false);
             btnCerrar.Click += (s, e) => this.Close();
 
+            bottomPanel.Controls.AddRange(new Control[] {
+                lblTotalSolicitudes, btnExportarPDF, btnExportarWord, btnExportarExcel, btnCerrar
+            });
+
             this.Controls.AddRange(new Control[] {
-                headerPanel, filtrosPanel, expiracionPanel, dgvSolicitudes, bottomPanel, btnCerrar
+                headerPanel, filtrosPanel, expiracionPanel, dgvSolicitudes, bottomPanel
             });
         }
 
@@ -803,53 +805,37 @@ namespace SistemaBanco
                     return;
                 }
 
-                SaveFileDialog saveDialog = new SaveFileDialog();
-                string contenido = "";
+                string query = @"SELECT 
+                                    id_solicitud as ""ID Solicitud"",
+                                    fecha_solicitud::date as ""Fecha Solicitud"",
+                                    nombre_cliente as ""Cliente"",
+                                    divisa as ""Divisa"",
+                                    monto as ""Monto"",
+                                    tipo_operacion as ""Tipo Operación"",
+                                    estado as ""Estado"",
+                                    fecha_autorizacion::date as ""Fecha Autorización"",
+                                    autorizado_por as ""Autorizado Por""
+                                FROM solicitudes_divisas 
+                                ORDER BY fecha_solicitud DESC";
+
+                DataTable dt = Database.ExecuteQuery(query);
+
+                if (dt.Rows.Count == 0)
+                {
+                    MessageBox.Show("No hay datos para exportar.", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
 
                 switch (formato)
                 {
                     case "PDF":
-                        saveDialog.Filter = "Archivo HTML (*.html)|*.html";
-                        saveDialog.FileName = $"Autorizacion_Divisas_{DateTime.Now:yyyyMMdd_HHmmss}.html";
-                        saveDialog.Title = "Exportar a PDF (se abrirá en navegador)";
-
-                        if (saveDialog.ShowDialog() == DialogResult.OK)
-                        {
-                            contenido = GenerarHTMLDivisas();
-                            System.IO.File.WriteAllText(saveDialog.FileName, contenido);
-                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(saveDialog.FileName) { UseShellExecute = true });
-                            CustomMessageBox.Show("Exportación Exitosa",
-                                "Archivo HTML generado. Se abrirá en su navegador.\nDesde ahí puede guardarlo como PDF usando Ctrl+P.",
-                                MessageBoxIcon.Information);
-                        }
+                        ExportHelper.ExportarPDF(dt, "Autorización de Divisas", "Autorizacion_Divisas");
                         break;
-
                     case "Word":
-                        saveDialog.Filter = "Documento Word (*.doc)|*.doc";
-                        saveDialog.FileName = $"Autorizacion_Divisas_{DateTime.Now:yyyyMMdd_HHmmss}.doc";
-
-                        if (saveDialog.ShowDialog() == DialogResult.OK)
-                        {
-                            contenido = GenerarWordDivisas();
-                            System.IO.File.WriteAllText(saveDialog.FileName, contenido);
-                            CustomMessageBox.Show("Exportación Exitosa",
-                                $"Documento Word generado exitosamente en:\n{saveDialog.FileName}",
-                                MessageBoxIcon.Information);
-                        }
+                        ExportHelper.ExportarWord(dt, "Autorización de Divisas", "Autorizacion_Divisas");
                         break;
-
                     case "Excel":
-                        saveDialog.Filter = "Archivo CSV (*.csv)|*.csv";
-                        saveDialog.FileName = $"Autorizacion_Divisas_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
-
-                        if (saveDialog.ShowDialog() == DialogResult.OK)
-                        {
-                            contenido = GenerarCSVDivisas();
-                            System.IO.File.WriteAllText(saveDialog.FileName, contenido);
-                            CustomMessageBox.Show("Exportación Exitosa",
-                                $"Archivo CSV generado exitosamente en:\n{saveDialog.FileName}\n\nPuede abrirlo con Excel.",
-                                MessageBoxIcon.Information);
-                        }
+                        ExportHelper.ExportarExcel(dt, "Autorización de Divisas", "Autorizacion_Divisas");
                         break;
                 }
             }
