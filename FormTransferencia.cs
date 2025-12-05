@@ -27,7 +27,6 @@ namespace SistemaBanco
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
 
-            // Header
             Panel headerPanel = new Panel
             {
                 Location = new System.Drawing.Point(0, 0),
@@ -45,12 +44,10 @@ namespace SistemaBanco
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter
             };
 
-            // Botón de inicio
             HomeButton.AddToForm(this, headerPanel);
 
             headerPanel.Controls.Add(lblTitulo);
 
-            // Card principal
             Panel mainCard = BankTheme.CreateCard(50, 110, 500, 400);
 
             Label lblCuentaDestino = new Label
@@ -148,7 +145,6 @@ namespace SistemaBanco
 
             mainCard.Controls.AddRange(new Control[] { lblCuentaDestino, txtCuentaDestino, lblNombreDestino, lblMonto, txtMonto, lblConcepto, txtConcepto, warningPanel });
 
-            // Botones
             Button btnTransferir = new Button
             {
                 Text = "✓ TRANSFERIR",
@@ -193,7 +189,7 @@ namespace SistemaBanco
 
                 if (dt.Rows.Count > 0)
                 {
-                    // Si hay coincidencia exacta, mostrarla
+
                     DataRow[] exactMatch = dt.Select($"numero_cuenta = '{cuentaDestino}'");
                     if (exactMatch.Length > 0)
                     {
@@ -202,7 +198,7 @@ namespace SistemaBanco
                     }
                     else
                     {
-                        // Mostrar primera coincidencia parcial
+
                         lblNombreDestino.Text = "💡 " + dt.Rows[0]["nombre_completo"].ToString() + " (" + dt.Rows[0]["numero_cuenta"].ToString() + ")";
                         lblNombreDestino.ForeColor = System.Drawing.Color.FromArgb(59, 130, 246);
                     }
@@ -215,7 +211,7 @@ namespace SistemaBanco
             }
             catch
             {
-                // Si hay error, no mostrar nada
+
             }
         }
 
@@ -293,7 +289,7 @@ namespace SistemaBanco
 
             try
             {
-                // Obtener saldo actual
+
                 string querySaldo = "SELECT saldo FROM cuentas WHERE id_cuenta = @id";
                 DataTable dt = Database.ExecuteQuery(querySaldo, new NpgsqlParameter("@id", FormLogin.IdCuentaActual));
                 decimal saldoActual = Convert.ToDecimal(dt.Rows[0]["saldo"]);
@@ -304,7 +300,6 @@ namespace SistemaBanco
                     return;
                 }
 
-                // Obtener ID cuenta destino
                 string queryDestino = "SELECT id_cuenta, saldo FROM cuentas WHERE numero_cuenta = @cuenta";
                 DataTable dtDestino = Database.ExecuteQuery(queryDestino, new NpgsqlParameter("@cuenta", txtCuentaDestino.Text.Trim()));
                 int idCuentaDestino = Convert.ToInt32(dtDestino.Rows[0]["id_cuenta"]);
@@ -313,7 +308,6 @@ namespace SistemaBanco
                 decimal nuevoSaldoOrigen = saldoActual - monto;
                 decimal nuevoSaldoDestino = saldoDestino + monto;
 
-                // Registrar movimiento de salida (origen)
                 string queryMovOrigen = @"INSERT INTO movimientos (id_cuenta, tipo, monto, concepto, saldo_anterior, saldo_nuevo) 
                                          VALUES (@cuenta, 'TRANSFERENCIA ENVIADA', @monto, @concepto, @saldoAnt, @saldoNuevo)";
                 Database.ExecuteNonQuery(queryMovOrigen,
@@ -323,7 +317,6 @@ namespace SistemaBanco
                     new NpgsqlParameter("@saldoAnt", saldoActual),
                     new NpgsqlParameter("@saldoNuevo", nuevoSaldoOrigen));
 
-                // Registrar movimiento de entrada (destino)
                 string queryMovDestino = @"INSERT INTO movimientos (id_cuenta, tipo, monto, concepto, saldo_anterior, saldo_nuevo) 
                                           VALUES (@cuenta, 'TRANSFERENCIA RECIBIDA', @monto, @concepto, @saldoAnt, @saldoNuevo)";
                 Database.ExecuteNonQuery(queryMovDestino,
@@ -333,7 +326,6 @@ namespace SistemaBanco
                     new NpgsqlParameter("@saldoAnt", saldoDestino),
                     new NpgsqlParameter("@saldoNuevo", nuevoSaldoDestino));
 
-                // Actualizar saldos
                 string queryUpdateOrigen = "UPDATE cuentas SET saldo = @saldo WHERE id_cuenta = @id";
                 Database.ExecuteNonQuery(queryUpdateOrigen,
                     new NpgsqlParameter("@saldo", nuevoSaldoOrigen),

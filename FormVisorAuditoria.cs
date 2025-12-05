@@ -7,9 +7,7 @@ using System.Text;
 
 namespace SistemaBanco
 {
-    /// <summary>
-    /// Visor de Auditoría del Sistema (BAN-56)
-    /// </summary>
+
     public partial class FormVisorAuditoria : Form
     {
         private DataGridView dgvAuditoria;
@@ -27,7 +25,7 @@ namespace SistemaBanco
         private Button btnAnterior;
         private Button btnSiguiente;
         private Label lblPaginacion;
-        
+
         private int paginaActual = 1;
         private int registrosPorPagina = 50;
         private int totalPaginas = 0;
@@ -37,8 +35,7 @@ namespace SistemaBanco
             InitializeComponent();
             CargarFiltros();
             CargarAuditoria();
-            
-            // Registrar acceso al visor
+
             AuditLogger.Log(AuditLogger.AuditAction.ConsultaHistorial, 
                 "Acceso al visor de auditoría");
         }
@@ -52,7 +49,6 @@ namespace SistemaBanco
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
 
-            // Header
             Panel headerPanel = new Panel
             {
                 Location = new Point(0, 0),
@@ -74,7 +70,6 @@ namespace SistemaBanco
 
             headerPanel.Controls.AddRange(new Control[] { btnVolver, lblTitulo });
 
-            // Panel de filtros
             Panel panelFiltros = BankTheme.CreateCard(20, 100, 1360, 120);
 
             Label lblFechaInicio = new Label
@@ -186,7 +181,6 @@ namespace SistemaBanco
                 TextAlign = ContentAlignment.MiddleRight
             };
 
-            // Botones de exportación
             btnExportarPDF = new Button
             {
                 Text = "📄 PDF",
@@ -227,7 +221,6 @@ namespace SistemaBanco
                 lblTotalRegistros, btnExportarPDF, btnExportarWord, btnExportarExcel
             });
 
-            // DataGridView
             dgvAuditoria = new DataGridView
             {
                 Location = new Point(20, 240),
@@ -253,7 +246,6 @@ namespace SistemaBanco
             dgvAuditoria.EnableHeadersVisualStyles = false;
             dgvAuditoria.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(240, 240, 240);
 
-            // Panel de paginación
             Panel panelPaginacion = new Panel
             {
                 Location = new Point(20, 730),
@@ -299,7 +291,7 @@ namespace SistemaBanco
         {
             try
             {
-                // Cargar usuarios
+
                 cmbUsuario.Items.Add("Todos");
                 string queryUsuarios = "SELECT DISTINCT usuario FROM auditoria_sistema ORDER BY usuario";
                 DataTable dtUsuarios = Database.ExecuteQuery(queryUsuarios);
@@ -312,7 +304,6 @@ namespace SistemaBanco
                 }
                 cmbUsuario.SelectedIndex = 0;
 
-                // Cargar acciones
                 cmbAccion.Items.Add("Todas");
                 foreach (var action in Enum.GetValues(typeof(AuditLogger.AuditAction)))
                 {
@@ -331,26 +322,22 @@ namespace SistemaBanco
         {
             try
             {
-                // Construir query con filtros
+
                 StringBuilder whereClause = new StringBuilder("WHERE 1=1");
-                
-                // Filtro de fechas
+
                 whereClause.Append($" AND fecha_hora >= '{dtpFechaInicio.Value:yyyy-MM-dd 00:00:00}'");
                 whereClause.Append($" AND fecha_hora <= '{dtpFechaFin.Value:yyyy-MM-dd 23:59:59}'");
 
-                // Filtro de usuario
                 if (cmbUsuario.SelectedIndex > 0)
                 {
                     whereClause.Append($" AND usuario = '{cmbUsuario.SelectedItem}'");
                 }
 
-                // Filtro de acción
                 if (cmbAccion.SelectedIndex > 0)
                 {
                     whereClause.Append($" AND accion = '{cmbAccion.SelectedItem}'");
                 }
 
-                // Filtro de búsqueda
                 if (!string.IsNullOrWhiteSpace(txtBusqueda.Text))
                 {
                     string busqueda = txtBusqueda.Text.Trim();
@@ -359,16 +346,14 @@ namespace SistemaBanco
                                      $"nombre_equipo ILIKE '%{busqueda}%')");
                 }
 
-                // Calcular total de registros
                 string queryCount = $"SELECT COUNT(*) FROM auditoria_sistema {whereClause}";
                 object resultCount = Database.ExecuteScalar(queryCount);
                 int totalRegistros = resultCount != null ? Convert.ToInt32(resultCount) : 0;
-                
+
                 totalPaginas = (int)Math.Ceiling((double)totalRegistros / registrosPorPagina);
                 if (totalPaginas == 0) totalPaginas = 1;
                 if (paginaActual > totalPaginas) paginaActual = totalPaginas;
 
-                // Query principal con paginación
                 int offset = (paginaActual - 1) * registrosPorPagina;
                 string query = $@"
                     SELECT 
@@ -400,7 +385,6 @@ namespace SistemaBanco
                         "Sin resultados", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
 
-                // Actualizar labels
                 lblTotalRegistros.Text = $"Total: {totalRegistros} registro(s)";
                 lblPaginacion.Text = $"Página {paginaActual} de {totalPaginas}";
                 btnAnterior.Enabled = paginaActual > 1;
@@ -419,28 +403,28 @@ namespace SistemaBanco
 
             dgvAuditoria.Columns["id_auditoria"].HeaderText = "ID";
             dgvAuditoria.Columns["id_auditoria"].Width = 60;
-            
+
             dgvAuditoria.Columns["usuario"].HeaderText = "Usuario";
             dgvAuditoria.Columns["usuario"].Width = 120;
-            
+
             dgvAuditoria.Columns["email"].HeaderText = "Email";
             dgvAuditoria.Columns["email"].Width = 180;
-            
+
             dgvAuditoria.Columns["accion"].HeaderText = "Acción";
             dgvAuditoria.Columns["accion"].Width = 150;
-            
+
             dgvAuditoria.Columns["detalles"].HeaderText = "Detalles";
             dgvAuditoria.Columns["detalles"].Width = 300;
-            
+
             dgvAuditoria.Columns["fecha_hora"].HeaderText = "Fecha y Hora";
             dgvAuditoria.Columns["fecha_hora"].Width = 150;
-            
+
             dgvAuditoria.Columns["ip_address"].HeaderText = "IP";
             dgvAuditoria.Columns["ip_address"].Width = 120;
-            
+
             dgvAuditoria.Columns["nombre_equipo"].HeaderText = "Equipo";
             dgvAuditoria.Columns["nombre_equipo"].Width = 150;
-            
+
             dgvAuditoria.Columns["tipo_movimiento"].HeaderText = "Tipo Mov.";
             dgvAuditoria.Columns["tipo_movimiento"].Width = 100;
         }
@@ -470,9 +454,9 @@ namespace SistemaBanco
         {
             try
             {
-                // Obtener todos los datos (sin paginación)
+
                 StringBuilder whereClause = new StringBuilder("WHERE 1=1");
-                
+
                 whereClause.Append($" AND fecha_hora >= '{dtpFechaInicio.Value:yyyy-MM-dd 00:00:00}'");
                 whereClause.Append($" AND fecha_hora <= '{dtpFechaFin.Value:yyyy-MM-dd 23:59:59}'");
 
@@ -527,7 +511,6 @@ namespace SistemaBanco
                 string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), fileName);
                 File.WriteAllText(filePath, content, Encoding.UTF8);
 
-                // Registrar exportación
                 AuditLogger.Log(AuditLogger.AuditAction.ExportacionDatos,
                     $"Exportación de auditoría a {formato}: {dt.Rows.Count} registros");
 
@@ -591,11 +574,9 @@ namespace SistemaBanco
         private string GenerarContenidoExcel(DataTable dt)
         {
             StringBuilder sb = new StringBuilder();
-            
-            // Encabezados
+
             sb.AppendLine("ID,Usuario,Email,Acción,Detalles,Fecha/Hora,IP,Equipo,Tipo Movimiento");
 
-            // Datos
             foreach (DataRow row in dt.Rows)
             {
                 sb.AppendLine($"{row["id_auditoria"]}," +

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace SistemaBanco
@@ -14,13 +15,12 @@ namespace SistemaBanco
         private void InitializeComponent()
         {
             this.Text = "Módulo Banco - Portal de Cliente";
-            this.ClientSize = new System.Drawing.Size(1000, 900);
+            this.ClientSize = new System.Drawing.Size(1000, 780);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = BankTheme.LightGray;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
 
-            // Header
             Panel headerPanel = new Panel
             {
                 Location = new System.Drawing.Point(0, 0),
@@ -69,7 +69,6 @@ namespace SistemaBanco
 
             headerPanel.Controls.AddRange(new Control[] { lblLogo, lblBienvenida, lblRol, lblFecha });
 
-            // Panel principal con opciones
             Label lblTitulo = new Label
             {
                 Text = "Panel de Control",
@@ -79,29 +78,24 @@ namespace SistemaBanco
                 ForeColor = BankTheme.PrimaryBlue
             };
 
-            // Tarjetas de opciones - Primera fila
-            Panel cardSaldo = CreateMenuCard(50, 180, 280, 180, "💰", "Consultar Saldo", "Ver el saldo actual de tu cuenta", "ConsultarSaldo");
-            Panel cardMovimiento = CreateMenuCard(360, 180, 280, 180, "💳", "Movimientos Financieros", "Registrar cargos y abonos", "RegistrarMovimientos");
-            Panel cardTransferencia = CreateMenuCard(670, 180, 280, 180, "🔄", "Transferencias", "Transferir entre cuentas", "Transferencias");
-
-            // Segunda fila
-            Panel cardHistorial = CreateMenuCard(50, 390, 280, 180, "📊", "Historial", "Ver movimientos realizados", "Historial");
-            Panel cardEstado = CreateMenuCard(360, 390, 280, 180, "📄", "Estado de Cuenta", "Generar reporte detallado", "EstadoCuenta");
-            Panel cardDivisas = CreateMenuCard(670, 390, 280, 180, "💱", "Autorización Divisas", "Gestionar operaciones en moneda extranjera", "ConsultarSolicitudesDivisas");
-
-            // Tercera fila - Módulos especializados (centrado)
-            Panel cardAdminUsuarios = CreateMenuCard(360, 600, 280, 180, "👥", "Admin. Usuarios", "Gestionar usuarios del sistema", "AdministrarUsuarios");
-
-            // Botón cerrar sesión
             Button btnSalir = new Button
             {
                 Text = "🚪 CERRAR SESIÓN",
-                Location = new System.Drawing.Point(400, 820),
-                Size = new System.Drawing.Size(200, 50)
+                Location = new System.Drawing.Point(750, 125),
+                Size = new System.Drawing.Size(200, 45)
             };
             BankTheme.StyleButton(btnSalir, false);
 
-            // Eventos - Asignar a las tarjetas y sus controles hijos
+            Panel cardSaldo = CreateMenuCard(60, 180, 280, 170, "💰", "Consultar Saldo", "Ver el saldo actual de tu cuenta", "ConsultarSaldo");
+            Panel cardMovimiento = CreateMenuCard(360, 180, 280, 170, "💳", "Movimientos Financieros", "Registrar cargos y abonos", "RegistrarMovimientos");
+            Panel cardTransferencia = CreateMenuCard(660, 180, 280, 170, "🔄", "Transferencias", "Transferir entre cuentas", "Transferencias");
+            Panel cardHistorial = CreateMenuCard(60, 370, 280, 170, "📊", "Historial", "Ver movimientos realizados", "Historial");
+            Panel cardEstado = CreateMenuCard(360, 370, 280, 170, "📄", "Estado de Cuenta", "Generar reporte detallado", "EstadoCuenta");
+            Panel cardDivisas = CreateMenuCard(660, 370, 280, 170, "💱", "Autorización Divisas", "Gestionar operaciones en moneda extranjera", "ConsultarSolicitudesDivisas");
+            Panel cardAdminUsuarios = CreateMenuCard(360, 560, 280, 170, "👥", "Admin. Usuarios", "Gestionar usuarios del sistema", "AdministrarUsuarios");
+
+            ReorganizarTarjetas(new Panel[] { cardSaldo, cardMovimiento, cardTransferencia, cardHistorial, cardEstado, cardDivisas, cardAdminUsuarios });
+
             AsignarEventoCard(cardSaldo, () => new FormSaldo().ShowDialog());
             AsignarEventoCard(cardMovimiento, () => new FormMovimientoFinanciero().ShowDialog());
             AsignarEventoCard(cardTransferencia, () => new FormTransferencia().ShowDialog());
@@ -123,12 +117,41 @@ namespace SistemaBanco
             }
         }
 
+        private void ReorganizarTarjetas(Panel[] tarjetas)
+        {
+
+            var tarjetasVisibles = tarjetas.Where(t => t.Visible).ToList();
+
+            int columna = 0;
+            int fila = 0;
+            int xInicial = 60;
+            int yInicial = 180;
+            int anchoTarjeta = 280;
+            int altoTarjeta = 170;
+            int espacioX = 300; // 280 + 20 de margen
+            int espacioY = 190; // 170 + 20 de margen
+
+            foreach (var tarjeta in tarjetasVisibles)
+            {
+                int x = xInicial + (columna * espacioX);
+                int y = yInicial + (fila * espacioY);
+
+                tarjeta.Location = new System.Drawing.Point(x, y);
+
+                columna++;
+                if (columna >= 3)
+                {
+                    columna = 0;
+                    fila++;
+                }
+            }
+        }
+
         private Panel CreateMenuCard(int x, int y, int width, int height, string icon, string title, string description, string permiso)
         {
-            // Verificar si el usuario tiene permiso
+
             bool tienePermiso = RoleManager.TienePermiso(FormLogin.RolUsuario, permiso);
-            
-            // Si no tiene permiso, no mostrar la tarjeta
+
             if (!tienePermiso)
             {
                 Panel emptyCard = new Panel
@@ -176,11 +199,9 @@ namespace SistemaBanco
 
             card.Controls.AddRange(new Control[] { lblIcon, lblTitle, lblDescription });
 
-            // Efecto hover
             card.MouseEnter += (s, e) => card.BackColor = BankTheme.LightGray;
             card.MouseLeave += (s, e) => card.BackColor = BankTheme.White;
 
-            // Propagar eventos de hover a los controles hijos
             foreach (Control ctrl in card.Controls)
             {
                 ctrl.MouseEnter += (s, e) => card.BackColor = BankTheme.LightGray;
@@ -201,7 +222,7 @@ namespace SistemaBanco
 
             if (resultado == DialogResult.Yes)
             {
-                // Cerrar este formulario y mostrar el login
+
                 this.Hide();
                 FormLogin loginForm = new FormLogin();
                 loginForm.ShowDialog();

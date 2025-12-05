@@ -17,7 +17,7 @@ namespace SistemaBanco
         private Label lblPaginacion;
         private Button btnAnterior;
         private Button btnSiguiente;
-        
+
         private int paginaActual = 1;
         private int registrosPorPagina = 25;
         private int totalPaginas = 0;
@@ -27,7 +27,7 @@ namespace SistemaBanco
         public FormAdministracionUsuarios()
         {
             InitializeComponent();
-            // Cargar usuarios después de que todos los controles estén inicializados
+
             this.Load += (s, e) => CargarUsuarios();
         }
 
@@ -40,7 +40,6 @@ namespace SistemaBanco
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
 
-            // Header con botón volver
             Panel headerPanel = new Panel
             {
                 Location = new Point(0, 0),
@@ -62,7 +61,6 @@ namespace SistemaBanco
 
             headerPanel.Controls.AddRange(new Control[] { btnVolver, lblTitulo });
 
-            // Panel de filtros
             Panel panelFiltros = BankTheme.CreateCard(20, 100, 1160, 100);
 
             Label lblBusqueda = new Label
@@ -142,7 +140,6 @@ namespace SistemaBanco
                 lblEstado, cmbFiltroEstado, btnLimpiarFiltros, lblTotalRegistros 
             });
 
-            // DataGridView de usuarios
             dgvUsuarios = new DataGridView
             {
                 Location = new Point(20, 220),
@@ -169,7 +166,6 @@ namespace SistemaBanco
             dgvUsuarios.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(240, 240, 240);
             dgvUsuarios.ColumnHeaderMouseClick += DgvUsuarios_ColumnHeaderMouseClick;
 
-            // Panel de paginación
             Panel panelPaginacion = new Panel
             {
                 Location = new Point(20, 630),
@@ -215,10 +211,9 @@ namespace SistemaBanco
         {
             try
             {
-                // Construir query con filtros
+
                 string whereClause = "WHERE 1=1";
-                
-                // Filtro de búsqueda
+
                 if (!string.IsNullOrWhiteSpace(txtBusqueda.Text))
                 {
                     string busqueda = txtBusqueda.Text.Trim();
@@ -227,29 +222,25 @@ namespace SistemaBanco
                                   $"OR LOWER(email) LIKE '%{busqueda.ToLower()}%')";
                 }
 
-                // Filtro de rol
                 if (cmbFiltroRol.SelectedIndex > 0)
                 {
                     whereClause += $" AND rol = '{cmbFiltroRol.SelectedItem}'";
                 }
 
-                // Filtro de estado
                 if (cmbFiltroEstado.SelectedIndex > 0)
                 {
                     bool activo = cmbFiltroEstado.SelectedItem.ToString() == "Activo";
                     whereClause += $" AND estatus = {activo}";
                 }
 
-                // Calcular total de registros
                 string queryCount = $"SELECT COUNT(*) FROM usuarios {whereClause}";
                 object resultCount = Database.ExecuteScalar(queryCount);
                 int totalRegistros = resultCount != null ? Convert.ToInt32(resultCount) : 0;
-                
+
                 totalPaginas = (int)Math.Ceiling((double)totalRegistros / registrosPorPagina);
                 if (totalPaginas == 0) totalPaginas = 1;
                 if (paginaActual > totalPaginas) paginaActual = totalPaginas;
 
-                // Query principal con paginación
                 int offset = (paginaActual - 1) * registrosPorPagina;
                 string query = $@"
                     SELECT 
@@ -286,7 +277,6 @@ namespace SistemaBanco
                     }
                 }
 
-                // Actualizar labels
                 lblTotalRegistros.Text = $"Total: {totalRegistros} usuario(s)";
                 lblPaginacion.Text = $"Página {paginaActual} de {totalPaginas}";
                 btnAnterior.Enabled = paginaActual > 1;
@@ -303,11 +293,9 @@ namespace SistemaBanco
         {
             if (dgvUsuarios.Columns.Count == 0) return;
 
-            // Ocultar columnas innecesarias
             dgvUsuarios.Columns["id_usuario"].Visible = false;
             dgvUsuarios.Columns["estatus"].Visible = false;
 
-            // Configurar encabezados
             dgvUsuarios.Columns["usuario"].HeaderText = "Usuario";
             dgvUsuarios.Columns["nombre_completo"].HeaderText = "Nombre Completo";
             dgvUsuarios.Columns["email"].HeaderText = "Correo Electrónico";
@@ -315,7 +303,6 @@ namespace SistemaBanco
             dgvUsuarios.Columns["fecha_registro"].HeaderText = "Fecha de Alta";
             dgvUsuarios.Columns["estado"].HeaderText = "Estado";
 
-            // Ajustar anchos
             dgvUsuarios.Columns["usuario"].Width = 120;
             dgvUsuarios.Columns["nombre_completo"].Width = 200;
             dgvUsuarios.Columns["email"].Width = 220;
@@ -326,13 +313,12 @@ namespace SistemaBanco
 
         private void AgregarBotonesAccion()
         {
-            // Eliminar columnas de botones si ya existen
+
             if (dgvUsuarios.Columns.Contains("btnEditar"))
                 dgvUsuarios.Columns.Remove("btnEditar");
             if (dgvUsuarios.Columns.Contains("btnEliminar"))
                 dgvUsuarios.Columns.Remove("btnEliminar");
 
-            // Botón Editar
             DataGridViewButtonColumn btnEditar = new DataGridViewButtonColumn
             {
                 Name = "btnEditar",
@@ -343,7 +329,6 @@ namespace SistemaBanco
             };
             dgvUsuarios.Columns.Add(btnEditar);
 
-            // Botón Eliminar
             DataGridViewButtonColumn btnEliminar = new DataGridViewButtonColumn
             {
                 Name = "btnEliminar",
@@ -354,9 +339,8 @@ namespace SistemaBanco
             };
             dgvUsuarios.Columns.Add(btnEliminar);
 
-            // Remover el manejador de eventos anterior si existe para evitar duplicados
             dgvUsuarios.CellContentClick -= DgvUsuarios_CellContentClick;
-            // Agregar el evento de clic en botones
+
             dgvUsuarios.CellContentClick += DgvUsuarios_CellContentClick;
         }
 
@@ -382,7 +366,7 @@ namespace SistemaBanco
         {
             try
             {
-                // Obtener datos del usuario
+
                 string query = $@"SELECT * FROM usuarios WHERE id_usuario = {idUsuario}";
                 DataTable dt = Database.ExecuteQuery(query);
 
@@ -395,7 +379,6 @@ namespace SistemaBanco
 
                 DataRow usuario = dt.Rows[0];
 
-                // Crear formulario modal de edición
                 Form formEditar = new Form
                 {
                     Text = "Editar Usuario",
@@ -424,7 +407,6 @@ namespace SistemaBanco
                 };
                 panelHeader.Controls.Add(lblTituloModal);
 
-                // Campos del formulario
                 int yPos = 80;
 
                 Label lblUsuario = new Label
@@ -517,7 +499,6 @@ namespace SistemaBanco
                 cmbEstado.Items.AddRange(new object[] { "Activo", "Inactivo" });
                 cmbEstado.SelectedItem = Convert.ToBoolean(usuario["estatus"]) ? "Activo" : "Inactivo";
 
-                // Botones
                 Button btnGuardar = new Button
                 {
                     Text = "✅ Guardar Cambios",
@@ -536,7 +517,7 @@ namespace SistemaBanco
 
                 btnGuardar.Click += (s, e) =>
                 {
-                    // Validaciones
+
                     if (string.IsNullOrWhiteSpace(txtNombre.Text))
                     {
                         MessageBox.Show("El nombre completo es obligatorio.", "Validación",
@@ -612,14 +593,14 @@ namespace SistemaBanco
         {
             try
             {
-                // Verificar si el usuario tiene movimientos o transacciones
+
                 string queryDependencias = $@"
                     SELECT 
                         (SELECT COUNT(*) FROM movimientos_financieros WHERE id_usuario = {idUsuario}) as movimientos,
                         (SELECT COUNT(*) FROM cuentas WHERE id_usuario = {idUsuario}) as cuentas";
 
                 DataTable dtDep = Database.ExecuteQuery(queryDependencias);
-                
+
                 if (dtDep != null && dtDep.Rows.Count > 0)
                 {
                     int movimientos = Convert.ToInt32(dtDep.Rows[0]["movimientos"]);
@@ -638,7 +619,6 @@ namespace SistemaBanco
                     }
                 }
 
-                // Confirmación de eliminación
                 DialogResult resultado = MessageBox.Show(
                     $"¿Está seguro de eliminar el usuario '{nombreUsuario}'?\n\n" +
                     "⚠️ Esta acción es IRREVERSIBLE y se registrará en los logs de auditoría.\n\n" +
@@ -650,7 +630,7 @@ namespace SistemaBanco
 
                 if (resultado == DialogResult.Yes)
                 {
-                    // Registrar en auditoría antes de eliminar
+
                     string queryAuditoria = $@"
                         INSERT INTO historial_movimientos 
                         (id_movimiento, campo_modificado, valor_anterior, valor_nuevo, 
@@ -666,10 +646,9 @@ namespace SistemaBanco
                     }
                     catch
                     {
-                        // Si falla la auditoría, continuar con la eliminación
+
                     }
 
-                    // Eliminar usuario
                     string queryDelete = $"DELETE FROM usuarios WHERE id_usuario = {idUsuario}";
                     int filasAfectadas = Database.ExecuteNonQuery(queryDelete);
 
@@ -702,10 +681,8 @@ namespace SistemaBanco
 
             string columnName = dgvUsuarios.Columns[e.ColumnIndex].Name;
 
-            // No ordenar por columnas de botones
             if (columnName == "btnEditar" || columnName == "btnEliminar") return;
 
-            // Cambiar dirección de ordenamiento
             if (ordenColumna == columnName)
             {
                 ordenDireccion = ordenDireccion == "ASC" ? "DESC" : "ASC";

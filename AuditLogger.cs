@@ -5,13 +5,11 @@ using Npgsql;
 
 namespace SistemaBanco
 {
-    /// <summary>
-    /// Sistema de auditoría completo con logs en BD y archivos (BAN-56)
-    /// </summary>
+
     public static class AuditLogger
     {
         private static readonly string LogDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
-        
+
         public enum AuditAction
         {
             Login,
@@ -42,16 +40,13 @@ namespace SistemaBanco
 
         static AuditLogger()
         {
-            // Crear directorio de logs si no existe
+
             if (!Directory.Exists(LogDirectory))
             {
                 Directory.CreateDirectory(LogDirectory);
             }
         }
 
-        /// <summary>
-        /// Registra una acción de auditoría en BD y archivo
-        /// </summary>
         public static void Log(
             AuditAction action,
             string detalles = "",
@@ -62,16 +57,15 @@ namespace SistemaBanco
         {
             try
             {
-                // Obtener información del usuario actual
+
                 string usuario = FormLogin.UsuarioActual ?? "SYSTEM";
                 string email = ObtenerEmailUsuario(usuario);
-                
-                // Obtener IP y nombre de equipo si no se proporcionaron
+
                 if (string.IsNullOrEmpty(ipAddress))
                 {
                     ipAddress = ObtenerIPLocal();
                 }
-                
+
                 if (string.IsNullOrEmpty(nombreEquipo))
                 {
                     nombreEquipo = Environment.MachineName;
@@ -79,17 +73,15 @@ namespace SistemaBanco
 
                 DateTime timestamp = DateTime.Now;
 
-                // 1. Registrar en base de datos
                 RegistrarEnBD(usuario, email, action.ToString(), detalles, timestamp, 
                              ipAddress, nombreEquipo, tipoMovimiento);
 
-                // 2. Registrar en archivo de log
                 RegistrarEnArchivo(usuario, email, action.ToString(), detalles, timestamp, 
                                  ipAddress, nombreEquipo, tipoMovimiento, nivel);
             }
             catch (Exception ex)
             {
-                // Log de emergencia en caso de fallo
+
                 LogEmergencia($"Error en AuditLogger: {ex.Message}");
             }
         }
@@ -129,11 +121,9 @@ namespace SistemaBanco
                 string appLogFile = Path.Combine(LogDirectory, $"app-{fecha}.log");
                 string dbLogFile = Path.Combine(LogDirectory, $"db-{fecha}.log");
 
-                // Formato: TIMESTAMP | NIVEL | componente | mensaje | clave=valor
                 string logEntry = $"{timestamp:yyyy-MM-dd HH:mm:ss.fff} | {nivel} | AuditLogger | {accion} | " +
                                 $"usuario={usuario} email={email} ip={ip} equipo={equipo} tipo={tipoMovimiento} detalles={detalles}";
 
-                // Formato JSONL
                 var jsonEntry = new
                 {
                     timestamp = timestamp.ToString("o"),
@@ -149,11 +139,9 @@ namespace SistemaBanco
                 };
                 string jsonLine = JsonSerializer.Serialize(jsonEntry);
 
-                // Escribir en app log
                 File.AppendAllText(appLogFile, logEntry + Environment.NewLine);
                 File.AppendAllText(appLogFile, jsonLine + Environment.NewLine);
 
-                // Si es acción de BD, también escribir en db log
                 if (accion.Contains("Movimiento") || accion.Contains("Transferencia"))
                 {
                     File.AppendAllText(dbLogFile, logEntry + Environment.NewLine);
@@ -210,21 +198,17 @@ namespace SistemaBanco
             }
             catch
             {
-                // Último recurso: escribir en consola
+
                 Console.WriteLine($"EMERGENCY LOG: {mensaje}");
             }
         }
 
-        /// <summary>
-        /// Limpia logs antiguos según política de retención
-        /// </summary>
         public static void LimpiarLogsAntiguos(int diasRetencion = 90)
         {
             try
             {
                 DateTime fechaLimite = DateTime.Now.AddDays(-diasRetencion);
-                
-                // Limpiar archivos de log
+
                 var archivos = Directory.GetFiles(LogDirectory, "*.log");
                 foreach (var archivo in archivos)
                 {
@@ -235,7 +219,6 @@ namespace SistemaBanco
                     }
                 }
 
-                // Limpiar registros de BD
                 string query = "DELETE FROM auditoria_sistema WHERE fecha_hora < @fecha";
                 Database.ExecuteNonQuery(query, new NpgsqlParameter("@fecha", fechaLimite));
             }

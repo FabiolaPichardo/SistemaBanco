@@ -31,7 +31,6 @@ namespace SistemaBanco
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
 
-            // Header
             Panel headerPanel = new Panel
             {
                 Location = new System.Drawing.Point(0, 0),
@@ -49,12 +48,10 @@ namespace SistemaBanco
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter
             };
 
-            // Botón de inicio
             HomeButton.AddToForm(this, headerPanel);
 
             headerPanel.Controls.Add(lblTitulo);
 
-            // Panel de filtros
             Panel filterPanel = BankTheme.CreateCard(30, 100, 1040, 80);
 
             Label lblFechaInicio = new Label
@@ -116,7 +113,6 @@ namespace SistemaBanco
 
             filterPanel.Controls.AddRange(new Control[] { lblFechaInicio, dtpInicio, lblFechaFin, dtpFin, btnFiltrar, btnLimpiarFiltros });
 
-            // Panel de resumen
             Panel summaryPanel = BankTheme.CreateCard(30, 200, 1040, 100);
 
             Label lblResumen = new Label
@@ -162,7 +158,6 @@ namespace SistemaBanco
 
             summaryPanel.Controls.AddRange(new Control[] { lblResumen, lblSaldoInicial, lblTotalIngresos, lblTotalEgresos, lblSaldoFinal });
 
-            // Panel de movimientos
             Panel movPanel = BankTheme.CreateCard(30, 320, 1040, 330);
 
             dgvMovimientos = new DataGridView
@@ -198,7 +193,6 @@ namespace SistemaBanco
 
             movPanel.Controls.Add(dgvMovimientos);
 
-            // Botones de exportación
             Panel panelBotones = new Panel
             {
                 Location = new System.Drawing.Point(30, 660),
@@ -254,7 +248,6 @@ namespace SistemaBanco
                 DateTime fechaInicio = dtpInicio.Value.Date;
                 DateTime fechaFin = dtpFin.Value.Date.AddDays(1).AddSeconds(-1);
 
-                // Obtener movimientos del período
                 string query = @"SELECT 
                                     fecha::date as Fecha,
                                     tipo as Tipo,
@@ -287,7 +280,7 @@ namespace SistemaBanco
                         saveDialog.Filter = "Archivo HTML (*.html)|*.html";
                         saveDialog.FileName = $"EstadoCuenta_{DateTime.Now:yyyyMMdd_HHmmss}.html";
                         saveDialog.Title = "Exportar a PDF (se abrirá en navegador)";
-                        
+
                         if (saveDialog.ShowDialog() == DialogResult.OK)
                         {
                             contenido = GenerarHTMLEstadoCuenta(dt);
@@ -301,7 +294,7 @@ namespace SistemaBanco
                     case "Word":
                         saveDialog.Filter = "Documento Word (*.doc)|*.doc";
                         saveDialog.FileName = $"EstadoCuenta_{DateTime.Now:yyyyMMdd_HHmmss}.doc";
-                        
+
                         if (saveDialog.ShowDialog() == DialogResult.OK)
                         {
                             contenido = GenerarWordEstadoCuenta(dt);
@@ -314,7 +307,7 @@ namespace SistemaBanco
                     case "Excel":
                         saveDialog.Filter = "Archivo CSV (*.csv)|*.csv";
                         saveDialog.FileName = $"EstadoCuenta_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
-                        
+
                         if (saveDialog.ShowDialog() == DialogResult.OK)
                         {
                             contenido = GenerarCSVEstadoCuenta(dt);
@@ -471,7 +464,6 @@ Saldo: ${Convert.ToDecimal(row["Saldo"]):N2}
                 DateTime fechaInicio = dtpInicio.Value.Date;
                 DateTime fechaFin = dtpFin.Value.Date.AddDays(1).AddSeconds(-1);
 
-                // Obtener movimientos del período
                 string query = @"SELECT 
                                     fecha::date as Fecha,
                                     tipo as Tipo,
@@ -496,7 +488,6 @@ Saldo: ${Convert.ToDecimal(row["Saldo"]):N2}
                     dgvMovimientos.Columns["Saldo"].DefaultCellStyle.Format = "C2";
                 }
 
-                // Calcular resumen
                 string queryResumen = @"SELECT 
                                         COALESCE(SUM(CASE WHEN tipo IN ('DEPOSITO', 'ABONO', 'TRANSFERENCIA RECIBIDA') THEN monto ELSE 0 END), 0) as ingresos,
                                         COALESCE(SUM(CASE WHEN tipo IN ('RETIRO', 'CARGO', 'TRANSFERENCIA ENVIADA') THEN monto ELSE 0 END), 0) as egresos
@@ -512,7 +503,6 @@ Saldo: ${Convert.ToDecimal(row["Saldo"]):N2}
                 decimal ingresos = Convert.ToDecimal(dtResumen.Rows[0]["ingresos"]);
                 decimal egresos = Convert.ToDecimal(dtResumen.Rows[0]["egresos"]);
 
-                // Obtener saldo actual
                 string querySaldo = "SELECT saldo FROM cuentas WHERE id_cuenta = @id";
                 DataTable dtSaldo = Database.ExecuteQuery(querySaldo, new NpgsqlParameter("@id", FormLogin.IdCuentaActual));
                 decimal saldoActual = Convert.ToDecimal(dtSaldo.Rows[0]["saldo"]);

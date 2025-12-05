@@ -5,10 +5,7 @@ using Npgsql;
 
 namespace SistemaBanco
 {
-    /// <summary>
-    /// Servicio de Integración del Módulo Banco
-    /// Actúa como núcleo central para exponer información financiera a otros módulos (ERP, CRM, Proveedores)
-    /// </summary>
+
     public class BancoIntegracionService
     {
         #region Singleton Pattern
@@ -38,9 +35,6 @@ namespace SistemaBanco
 
         #region Consulta de Saldos en Tiempo Real
 
-        /// <summary>
-        /// Obtiene el saldo actual de una cuenta específica
-        /// </summary>
         public SaldoResponse ObtenerSaldo(int idUsuario)
         {
             try
@@ -91,9 +85,6 @@ namespace SistemaBanco
             }
         }
 
-        /// <summary>
-        /// Obtiene saldos de múltiples cuentas
-        /// </summary>
         public List<SaldoResponse> ObtenerSaldosMultiples(List<int> idsUsuarios)
         {
             var saldos = new List<SaldoResponse>();
@@ -108,9 +99,6 @@ namespace SistemaBanco
 
         #region Consulta de Movimientos
 
-        /// <summary>
-        /// Obtiene movimientos de una cuenta en un rango de fechas
-        /// </summary>
         public MovimientosResponse ObtenerMovimientos(int idUsuario, DateTime fechaInicio, DateTime fechaFin)
         {
             try
@@ -174,9 +162,6 @@ namespace SistemaBanco
             }
         }
 
-        /// <summary>
-        /// Obtiene el último movimiento de una cuenta
-        /// </summary>
         public MovimientoDetalle ObtenerUltimoMovimiento(int idUsuario)
         {
             try
@@ -222,14 +207,11 @@ namespace SistemaBanco
 
         #region Registro de Operaciones (Para ERP/CRM/Proveedores)
 
-        /// <summary>
-        /// Registra un cargo en la cuenta (usado por módulos externos)
-        /// </summary>
         public OperacionResponse RegistrarCargo(int idUsuario, decimal monto, string concepto, string moduloOrigen)
         {
             try
             {
-                // Validar saldo suficiente
+
                 var saldoActual = ObtenerSaldo(idUsuario);
                 if (!saldoActual.Exito)
                     return new OperacionResponse { Exito = false, Mensaje = "No se pudo obtener el saldo actual" };
@@ -237,7 +219,6 @@ namespace SistemaBanco
                 if (saldoActual.Saldo < monto)
                     return new OperacionResponse { Exito = false, Mensaje = "Saldo insuficiente" };
 
-                // Registrar movimiento
                 string query = @"
                     INSERT INTO movimientos (id_usuario, tipo_movimiento, monto, concepto, saldo_anterior, saldo_nuevo)
                     VALUES (@idUsuario, 'Cargo', @monto, @concepto, @saldoAnterior, @saldoNuevo)
@@ -257,13 +238,11 @@ namespace SistemaBanco
                 DataTable dt = Database.ExecuteQuery(query, parametros);
                 int idMovimiento = Convert.ToInt32(dt.Rows[0]["id_movimiento"]);
 
-                // Actualizar saldo en cuenta
                 string queryUpdate = "UPDATE cuentas SET saldo = @nuevoSaldo, fecha_ultima_actualizacion = CURRENT_TIMESTAMP WHERE id_usuario = @idUsuario";
                 Database.ExecuteNonQuery(queryUpdate,
                     new NpgsqlParameter("@nuevoSaldo", nuevoSaldo),
                     new NpgsqlParameter("@idUsuario", idUsuario));
 
-                // Registrar en auditoría
                 AuditLogger.Log(AuditLogger.AuditAction.RegistroMovimiento,
                     $"INTEGRACION_CARGO - Módulo: {moduloOrigen}, Usuario: {idUsuario}, Monto: {monto:C2}, ID Movimiento: {idMovimiento}");
 
@@ -286,9 +265,6 @@ namespace SistemaBanco
             }
         }
 
-        /// <summary>
-        /// Registra un abono en la cuenta (usado por módulos externos)
-        /// </summary>
         public OperacionResponse RegistrarAbono(int idUsuario, decimal monto, string concepto, string moduloOrigen)
         {
             try
@@ -297,7 +273,6 @@ namespace SistemaBanco
                 if (!saldoActual.Exito)
                     return new OperacionResponse { Exito = false, Mensaje = "No se pudo obtener el saldo actual" };
 
-                // Registrar movimiento
                 string query = @"
                     INSERT INTO movimientos (id_usuario, tipo_movimiento, monto, concepto, saldo_anterior, saldo_nuevo)
                     VALUES (@idUsuario, 'Abono', @monto, @concepto, @saldoAnterior, @saldoNuevo)
@@ -317,13 +292,11 @@ namespace SistemaBanco
                 DataTable dt = Database.ExecuteQuery(query, parametros);
                 int idMovimiento = Convert.ToInt32(dt.Rows[0]["id_movimiento"]);
 
-                // Actualizar saldo en cuenta
                 string queryUpdate = "UPDATE cuentas SET saldo = @nuevoSaldo, fecha_ultima_actualizacion = CURRENT_TIMESTAMP WHERE id_usuario = @idUsuario";
                 Database.ExecuteNonQuery(queryUpdate,
                     new NpgsqlParameter("@nuevoSaldo", nuevoSaldo),
                     new NpgsqlParameter("@idUsuario", idUsuario));
 
-                // Registrar en auditoría
                 AuditLogger.Log(AuditLogger.AuditAction.RegistroMovimiento,
                     $"INTEGRACION_ABONO - Módulo: {moduloOrigen}, Usuario: {idUsuario}, Monto: {monto:C2}, ID Movimiento: {idMovimiento}");
 
@@ -350,9 +323,6 @@ namespace SistemaBanco
 
         #region Consultas para ERP (Contabilidad)
 
-        /// <summary>
-        /// Obtiene resumen contable para el módulo ERP
-        /// </summary>
         public ResumenContableResponse ObtenerResumenContable(DateTime fechaInicio, DateTime fechaFin)
         {
             try
@@ -403,9 +373,6 @@ namespace SistemaBanco
 
         #region Consultas para CRM (Información al Cliente)
 
-        /// <summary>
-        /// Obtiene información financiera del cliente para el módulo CRM
-        /// </summary>
         public ClienteFinancieroResponse ObtenerInformacionCliente(int idUsuario)
         {
             try
@@ -414,7 +381,6 @@ namespace SistemaBanco
                 if (!saldo.Exito)
                     return new ClienteFinancieroResponse { Exito = false, Mensaje = saldo.Mensaje };
 
-                // Obtener estadísticas de movimientos del último mes
                 var movimientos = ObtenerMovimientos(idUsuario, DateTime.Now.AddMonths(-1), DateTime.Now);
 
                 decimal totalCargos = 0;
@@ -462,14 +428,11 @@ namespace SistemaBanco
 
         #region Consultas para Proveedores (Conciliación de Pagos)
 
-        /// <summary>
-        /// Verifica si un pago fue procesado (para conciliación con proveedores)
-        /// </summary>
         public VerificacionPagoResponse VerificarPago(int idUsuario, decimal monto, DateTime fechaAproximada, string conceptoBusqueda)
         {
             try
             {
-                // Buscar en un rango de ±2 días
+
                 DateTime fechaInicio = fechaAproximada.AddDays(-2);
                 DateTime fechaFin = fechaAproximada.AddDays(2);
 
@@ -533,10 +496,6 @@ namespace SistemaBanco
 
         #region Notificaciones de Cambios (Para Suscriptores)
 
-        /// <summary>
-        /// // Evento que se dispara cdo hay un cambio en saldos o movimientos
-        /// Los módulos externos pueden suscribirse a este evento
-        /// </summary>
         public event EventHandler<CambioFinancieroEventArgs> CambioFinanciero;
 
         protected virtual void OnCambioFinanciero(CambioFinancieroEventArgs e)
@@ -544,9 +503,6 @@ namespace SistemaBanco
             CambioFinanciero?.Invoke(this, e);
         }
 
-        /// <summary>
-        /// Notifica a los módulos suscritos sobre un cambio financiero
-        /// </summary>
         public void NotificarCambio(int idUsuario, string tipoOperacion, decimal monto, string moduloOrigen)
         {
             OnCambioFinanciero(new CambioFinancieroEventArgs

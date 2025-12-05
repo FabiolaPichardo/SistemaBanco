@@ -6,8 +6,7 @@ namespace SistemaBanco
 {
     public static class EmailService
     {
-        // Configuración del servidor SMTP
-        // NOTA: Estos valores deben configurarse según el proveedor de correo
+
         private static string smtpServer = "smtp.gmail.com"; // Para Gmail
         private static int smtpPort = 587;
         private static string smtpUser = "tu_correo@gmail.com"; // Cambiar por el correo del sistema
@@ -15,13 +14,6 @@ namespace SistemaBanco
         private static string fromEmail = "tu_correo@gmail.com";
         private static string fromName = "Módulo Banco";
 
-        /// <summary>
-        /// Envía un correo electrónico
-        /// </summary>
-        /// <param name="toEmail">Correo del destinatario</param>
-        /// <param name="subject">Asunto del correo</param>
-        /// <param name="body">Cuerpo del mensaje</param>
-        /// <returns>True si se envió correctamente, False si hubo error</returns>
         public static bool EnviarCorreo(string toEmail, string subject, string body)
         {
             try
@@ -52,13 +44,10 @@ namespace SistemaBanco
             }
         }
 
-        /// <summary>
-        /// Envía un correo con el código de recuperación de contraseña
-        /// </summary>
         public static bool EnviarCodigoRecuperacion(string toEmail, string nombreUsuario, string codigo)
         {
             string subject = "Código de Recuperación de Contraseña - Módulo Banco";
-            
+
             string body = $@"
                 <html>
                 <head>
@@ -101,9 +90,6 @@ namespace SistemaBanco
             return EnviarCorreo(toEmail, subject, body);
         }
 
-        /// <summary>
-        /// Verifica si la configuración de correo está lista
-        /// </summary>
         public static bool ConfiguracionValida()
         {
             return !smtpUser.Contains("tu_correo") && !smtpPassword.Contains("tu_contraseña");

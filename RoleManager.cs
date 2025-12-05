@@ -5,7 +5,7 @@ namespace SistemaBanco
 {
     public static class RoleManager
     {
-        // Permisos por rol
+
         private static readonly Dictionary<string, HashSet<string>> permisos = new Dictionary<string, HashSet<string>>
         {
             ["Cliente"] = new HashSet<string>

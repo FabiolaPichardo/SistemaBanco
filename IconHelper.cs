@@ -16,12 +16,12 @@ namespace SistemaBanco
                 if (_appIcon == null)
                 {
                     string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "imagenes", "logo.png");
-                    
+
                     if (File.Exists(iconPath))
                     {
                         using (var bitmap = new Bitmap(iconPath))
                         {
-                            // Convertir el bitmap a icono
+
                             IntPtr hIcon = bitmap.GetHicon();
                             _appIcon = Icon.FromHandle(hIcon);
                         }
@@ -35,7 +35,7 @@ namespace SistemaBanco
             }
             catch
             {
-                // Si falla, usar el icono por defecto
+
             }
         }
     }

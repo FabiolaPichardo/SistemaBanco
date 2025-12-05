@@ -52,7 +52,6 @@ namespace SistemaBanco
             this.MaximizeBox = false;
             this.AutoScroll = true;
 
-            // Header
             Panel headerPanel = new Panel
             {
                 Location = new System.Drawing.Point(0, 0),
@@ -60,7 +59,6 @@ namespace SistemaBanco
                 BackColor = BankTheme.PrimaryBlue
             };
 
-            // Boton Regresar
             Button btnRegresar = new Button
             {
                 Text = "←",
@@ -106,7 +104,6 @@ namespace SistemaBanco
 
             headerPanel.Controls.AddRange(new Control[] { btnRegresar, lblLogo, lblTitulo, lblSubtitulo });
 
-            // Card principal
             Panel mainCard = BankTheme.CreateCard(50, 120, 600, 600);
             mainCard.AutoScroll = true;
 
@@ -122,7 +119,6 @@ namespace SistemaBanco
             };
             yPos += 40;
 
-            // Email
             Label lblEmail = new Label
             {
                 Text = "Correo Electronico",
@@ -152,7 +148,6 @@ namespace SistemaBanco
             };
             yPos += 25;
 
-            // Rol
             Label lblRol = new Label
             {
                 Text = "Rol en la Empresa",
@@ -174,7 +169,6 @@ namespace SistemaBanco
             cmbRol.SelectedIndex = 0;
             yPos += 45;
 
-            // Nombre completo
             Label lblNombre = new Label
             {
                 Text = "Nombre Completo",
@@ -194,7 +188,6 @@ namespace SistemaBanco
             BankTheme.StyleTextBox(txtNombreCompleto);
             yPos += 45;
 
-            // Usuario
             Label lblUsuario = new Label
             {
                 Text = "Nombre de Usuario (8-20 caracteres, letras, numeros y simbolos)",
@@ -225,7 +218,6 @@ namespace SistemaBanco
             };
             yPos += 25;
 
-            // Contraseña
             Label lblPassword = new Label
             {
                 Text = "Contraseña (8-20 caracteres, mayusculas, minusculas, numeros y simbolos)",
@@ -257,7 +249,6 @@ namespace SistemaBanco
             };
             yPos += 25;
 
-            // Confirmar contraseña
             Label lblConfirmPassword = new Label
             {
                 Text = "Confirmar Contraseña",
@@ -279,7 +270,6 @@ namespace SistemaBanco
             BankTheme.StyleTextBox(txtConfirmPassword);
             yPos += 40;
 
-            // Mostrar contraseña
             chkMostrarPassword = new CheckBox
             {
                 Text = "Mostrar contraseñas",
@@ -294,7 +284,6 @@ namespace SistemaBanco
             };
             yPos += 40;
 
-            // Preguntas de seguridad
             Label lblSeguridadTitle = new Label
             {
                 Text = "Preguntas de Seguridad",
@@ -305,7 +294,6 @@ namespace SistemaBanco
             };
             yPos += 35;
 
-            // Pregunta 1
             Label lblPregunta1 = new Label
             {
                 Text = "Pregunta de Seguridad 1",
@@ -336,7 +324,6 @@ namespace SistemaBanco
             BankTheme.StyleTextBox(txtRespuesta1);
             yPos += 45;
 
-            // Pregunta 2
             Label lblPregunta2 = new Label
             {
                 Text = "Pregunta de Seguridad 2",
@@ -367,7 +354,6 @@ namespace SistemaBanco
             BankTheme.StyleTextBox(txtRespuesta2);
             yPos += 45;
 
-            // Pregunta 3
             Label lblPregunta3 = new Label
             {
                 Text = "Pregunta de Seguridad 3",
@@ -409,7 +395,6 @@ namespace SistemaBanco
                 lblPregunta3, cmbPregunta3, txtRespuesta3
             });
 
-            // Botones
             Button btnRegistrar = new Button
             {
                 Text = "CONTINUAR",
@@ -520,7 +505,7 @@ namespace SistemaBanco
 
         private void BtnRegistrar_Click(object sender, EventArgs e)
         {
-            // Validar email
+
             if (string.IsNullOrWhiteSpace(txtEmail.Text))
             {
                 CustomMessageBox.Show("Campo Requerido",
@@ -539,7 +524,6 @@ namespace SistemaBanco
                 return;
             }
 
-            // Validar nombre completo
             if (string.IsNullOrWhiteSpace(txtNombreCompleto.Text))
             {
                 CustomMessageBox.Show("Campo Requerido",
@@ -549,7 +533,6 @@ namespace SistemaBanco
                 return;
             }
 
-            // Validar usuario
             string usuario = txtUsuario.Text.Trim();
             if (string.IsNullOrWhiteSpace(usuario))
             {
@@ -574,7 +557,6 @@ namespace SistemaBanco
                 return;
             }
 
-            // Validar contraseña
             string password = txtPassword.Text;
             if (string.IsNullOrWhiteSpace(password))
             {
@@ -600,7 +582,6 @@ namespace SistemaBanco
                 return;
             }
 
-            // Validar confirmación
             if (txtPassword.Text != txtConfirmPassword.Text)
             {
                 CustomMessageBox.Show("Contraseñas no coinciden",
@@ -610,7 +591,6 @@ namespace SistemaBanco
                 return;
             }
 
-            // Validar preguntas de seguridad
             if (string.IsNullOrWhiteSpace(txtRespuesta1.Text))
             {
                 CustomMessageBox.Show("Pregunta de Seguridad Requerida",
@@ -640,7 +620,7 @@ namespace SistemaBanco
 
             try
             {
-                // Verificar si el usuario ya existe
+
                 string queryCheck = "SELECT COUNT(*) FROM usuarios WHERE usuario = @user OR email = @email";
                 DataTable dtCheck = Database.ExecuteQuery(queryCheck,
                     new NpgsqlParameter("@user", usuario),
@@ -654,7 +634,6 @@ namespace SistemaBanco
                     return;
                 }
 
-                // Insertar nuevo usuario (id_usuario se asigna automáticamente por SERIAL)
                 string queryInsert = @"INSERT INTO usuarios (usuario, contraseña, nombre_completo, email,
                                       pregunta_seguridad_1, respuesta_seguridad_1,
                                       pregunta_seguridad_2, respuesta_seguridad_2,
@@ -680,7 +659,6 @@ namespace SistemaBanco
 
                 int idUsuario = Convert.ToInt32(dtResult.Rows[0][0]);
 
-                // Crear cuenta bancaria automaticamente con ID único
                 string numeroCuenta = "100" + DateTime.Now.ToString("yyyyMMddHHmmss");
                 string queryAccount = @"INSERT INTO cuentas (id_usuario, numero_cuenta, tipo_cuenta, saldo, estatus) 
                                        VALUES (@id, @numero, 'AHORRO', 0.00, TRUE)";

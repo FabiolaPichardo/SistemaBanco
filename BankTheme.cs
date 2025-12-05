@@ -6,7 +6,7 @@ namespace SistemaBanco
 {
     public static class BankTheme
     {
-        // Paleta de colores corporativa bancaria
+
         public static readonly Color PrimaryBlue = Color.FromArgb(0, 51, 102);      // Azul oscuro corporativo
         public static readonly Color SecondaryBlue = Color.FromArgb(0, 102, 204);   // Azul medio
         public static readonly Color AccentGold = Color.FromArgb(212, 175, 55);     // Dorado elegante
@@ -19,7 +19,6 @@ namespace SistemaBanco
         public static readonly Color TextPrimary = Color.FromArgb(33, 37, 41);
         public static readonly Color TextSecondary = Color.FromArgb(108, 117, 125);
 
-        // Fuentes
         public static readonly Font TitleFont = new Font("Segoe UI", 18F, FontStyle.Bold);
         public static readonly Font SubtitleFont = new Font("Segoe UI", 14F, FontStyle.Bold);
         public static readonly Font HeaderFont = new Font("Segoe UI", 12F, FontStyle.Bold);
@@ -34,7 +33,7 @@ namespace SistemaBanco
             btn.Font = HeaderFont;
             btn.Cursor = Cursors.Hand;
             btn.ForeColor = White;
-            
+
             if (isPrimary)
             {
                 btn.BackColor = PrimaryBlue;
@@ -69,7 +68,7 @@ namespace SistemaBanco
                 BackColor = White,
                 BorderStyle = BorderStyle.None
             };
-            
+
             card.Paint += (s, e) =>
             {
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -79,7 +78,7 @@ namespace SistemaBanco
                     e.Graphics.DrawRectangle(pen, rect);
                 }
             };
-            
+
             return card;
         }
     }

@@ -5,9 +5,7 @@ using System.Windows.Forms;
 
 namespace SistemaBanco
 {
-    /// <summary>
-    /// Gestión de Alertas de Actividad Sospechosa (BAN-57)
-    /// </summary>
+
     public partial class FormAlertasSospechosas : Form
     {
         private DataGridView dgvAlertas;
@@ -23,7 +21,7 @@ namespace SistemaBanco
         private Button btnExportarWord;
         private Button btnExportarPDF;
         private Label lblTotalAlertas;
-        
+
         private int paginaActual = 1;
         private int registrosPorPagina = 25;
         private int totalPaginas = 0;
@@ -32,7 +30,7 @@ namespace SistemaBanco
         {
             InitializeComponent();
             CargarAlertas();
-            
+
             AuditLogger.Log(AuditLogger.AuditAction.ConsultaHistorial,
                 "Acceso al módulo de alertas sospechosas");
         }
@@ -46,7 +44,6 @@ namespace SistemaBanco
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
 
-            // Header
             Panel headerPanel = new Panel
             {
                 Location = new Point(0, 0),
@@ -68,11 +65,9 @@ namespace SistemaBanco
 
             headerPanel.Controls.AddRange(new Control[] { btnVolver, lblTitulo });
 
-            // Panel de filtros
             Panel panelFiltros = BankTheme.CreateCard(20, 100, 1360, 140);
             CrearFiltros(panelFiltros);
 
-            // DataGridView
             dgvAlertas = new DataGridView
             {
                 Location = new Point(20, 260),
@@ -186,7 +181,6 @@ namespace SistemaBanco
             BankTheme.StyleButton(btnBuscar, true);
             btnBuscar.Click += (s, e) => CargarAlertas();
 
-            // Segunda fila - Herramientas
             Label lblExpiracion = new Label
             {
                 Text = "Tiempo de expiración:",
@@ -221,7 +215,6 @@ namespace SistemaBanco
                 ForeColor = BankTheme.TextSecondary
             };
 
-            // Botones de exportación
             btnExportarExcel = new Button
             {
                 Text = "📊 Excel",
@@ -266,7 +259,7 @@ namespace SistemaBanco
             try
             {
                 string whereClause = "WHERE 1=1";
-                
+
                 whereClause += $" AND fecha_alerta >= '{dtpFechaInicio.Value:yyyy-MM-dd}'";
                 whereClause += $" AND fecha_alerta <= '{dtpFechaFin.Value:yyyy-MM-dd 23:59:59}'";
 
@@ -360,7 +353,7 @@ namespace SistemaBanco
 
         private void MostrarDetalleAlerta(int idAlerta)
         {
-            // Implementar modal de detalle (similar a BAN-41)
+
             MessageBox.Show($"Detalle de alerta {idAlerta} - Por implementar",
                 "Detalle", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -375,7 +368,7 @@ namespace SistemaBanco
             }
 
             int idAlerta = Convert.ToInt32(dgvAlertas.SelectedRows[0].Cells["id_alerta"].Value);
-            
+
             try
             {
                 string query = $@"

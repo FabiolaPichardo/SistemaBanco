@@ -7,7 +7,7 @@ using Npgsql;
 
 namespace SistemaBanco
 {
-    // BAN-32 a BAN-50: Revisión Completa de Movimientos Financieros
+
     public partial class FormRevisionMovimientos : Form
     {
         private DataGridView dgvMovimientos;
@@ -42,7 +42,6 @@ namespace SistemaBanco
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
 
-            // Header
             Panel headerPanel = new Panel
             {
                 Location = new System.Drawing.Point(0, 0),
@@ -63,7 +62,6 @@ namespace SistemaBanco
 
             headerPanel.Controls.Add(lblTitulo);
 
-            // BAN-37: Barra de Búsqueda General
             Panel panelBusqueda = new Panel
             {
                 Location = new System.Drawing.Point(20, 100),
@@ -89,7 +87,6 @@ namespace SistemaBanco
             };
             txtBusqueda.TextChanged += TxtBusqueda_TextChanged;
 
-            // BAN-38: Botón Limpiar Filtros
             Button btnLimpiarTodo = new Button
             {
                 Text = "🗑️ LIMPIAR FILTROS",
@@ -105,7 +102,6 @@ namespace SistemaBanco
 
             panelBusqueda.Controls.AddRange(new Control[] { lblBuscar, txtBusqueda, btnLimpiarTodo });
 
-            // BAN-35 y BAN-36: Botones de Acceso Rápido
             Panel panelAccesoRapido = new Panel
             {
                 Location = new System.Drawing.Point(20, 160),
@@ -149,7 +145,6 @@ namespace SistemaBanco
             btnVerAbonos.FlatAppearance.BorderSize = 0;
             btnVerAbonos.Click += (s, e) => { filtroTipo = "ABONO"; CargarMovimientos(); };
 
-            // BAN-36: Filtro por Beneficiario
             Label lblBeneficiario = new Label
             {
                 Text = "👤 Beneficiario:",
@@ -167,7 +162,6 @@ namespace SistemaBanco
             };
             cmbBeneficiario.SelectedIndexChanged += (s, e) => CargarMovimientos();
 
-            // BAN-46: Botones de exportación
             Button btnExportPDF = new Button
             {
                 Text = "📄 PDF",
@@ -212,7 +206,6 @@ namespace SistemaBanco
                 btnExportPDF, btnExportWord, btnExportExcel
             });
 
-            // BAN-40: Panel de Resumen Ejecutivo
             Panel panelResumen = new Panel
             {
                 Location = new System.Drawing.Point(20, 220),
@@ -230,7 +223,6 @@ namespace SistemaBanco
                 ForeColor = BankTheme.PrimaryBlue
             };
 
-            // Total Movimientos
             Label lblTotalMovTitulo = new Label
             {
                 Text = "Total Movimientos:",
@@ -249,7 +241,6 @@ namespace SistemaBanco
                 ForeColor = BankTheme.PrimaryBlue
             };
 
-            // Total Cargos
             Label lblCargosTitulo = new Label
             {
                 Text = "Total Cargos:",
@@ -268,7 +259,6 @@ namespace SistemaBanco
                 ForeColor = Color.FromArgb(220, 53, 69)
             };
 
-            // Total Abonos
             Label lblAbonosTitulo = new Label
             {
                 Text = "Total Abonos:",
@@ -287,7 +277,6 @@ namespace SistemaBanco
                 ForeColor = Color.FromArgb(40, 167, 69)
             };
 
-            // Saldo Resultante
             Label lblSaldoTitulo = new Label
             {
                 Text = "Saldo Resultante:",
@@ -312,7 +301,6 @@ namespace SistemaBanco
                 lblSaldoTitulo, lblSaldoResultante
             });
 
-            // BAN-39: DataGridView con formato mejorado
             dgvMovimientos = new DataGridView
             {
                 Location = new System.Drawing.Point(20, 310),
@@ -335,13 +323,10 @@ namespace SistemaBanco
             dgvMovimientos.EnableHeadersVisualStyles = false;
             dgvMovimientos.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(240, 240, 240);
 
-            // BAN-34: Ordenamiento por columnas
             dgvMovimientos.ColumnHeaderMouseClick += DgvMovimientos_ColumnHeaderMouseClick;
-            
-            // BAN-41: Doble clic para ver detalles
+
             dgvMovimientos.CellDoubleClick += DgvMovimientos_CellDoubleClick;
 
-            // BAN-45: Panel de paginación
             Panel panelPaginacion = new Panel
             {
                 Location = new System.Drawing.Point(20, 835),
@@ -387,7 +372,6 @@ namespace SistemaBanco
 
             panelPaginacion.Controls.AddRange(new Control[] { btnPaginaAnterior, lblPaginaInfo, btnPaginaSiguiente });
 
-            // BAN-48 y BAN-50: Pie de página con última actualización y botón refrescar
             Panel panelPie = new Panel
             {
                 Location = new System.Drawing.Point(20, 880),
@@ -405,7 +389,6 @@ namespace SistemaBanco
                 TextAlign = ContentAlignment.MiddleLeft
             };
 
-            // BAN-50: Botón refrescar manual
             Button btnRefrescar = new Button
             {
                 Text = "🔄 Refrescar",
@@ -426,7 +409,6 @@ namespace SistemaBanco
             });
         }
 
-        // BAN-36: Cargar beneficiarios
         private void CargarBeneficiarios()
         {
             try
@@ -455,23 +437,20 @@ namespace SistemaBanco
         {
             try
             {
-                // BAN-45: Primero contar total de registros para paginación
+
                 string countQuery = @"SELECT COUNT(*) as total FROM movimientos_financieros WHERE 1=1";
 
-                // Filtro de tipo (BAN-35)
                 if (filtroTipo != "TODOS")
                 {
                     countQuery += $" AND tipo_operacion = '{filtroTipo}'";
                 }
 
-                // BAN-36: Filtro por beneficiario
                 if (cmbBeneficiario != null && cmbBeneficiario.SelectedIndex > 0)
                 {
                     string beneficiario = cmbBeneficiario.SelectedItem.ToString().Replace("'", "''");
                     countQuery += $" AND beneficiario = '{beneficiario}'";
                 }
 
-                // BAN-37: Búsqueda general
                 if (!string.IsNullOrWhiteSpace(txtBusqueda?.Text))
                 {
                     string busqueda = txtBusqueda.Text.Replace("'", "''");
@@ -486,11 +465,10 @@ namespace SistemaBanco
                 DataTable dtCount = Database.ExecuteQuery(countQuery);
                 int totalRegistros = Convert.ToInt32(dtCount.Rows[0]["total"]);
                 totalPaginas = (int)Math.Ceiling((double)totalRegistros / registrosPorPagina);
-                
+
                 if (totalPaginas == 0) totalPaginas = 1;
                 if (paginaActual > totalPaginas) paginaActual = totalPaginas;
 
-                // Ahora cargar los datos con paginación
                 string query = @"SELECT 
                     folio as ""Folio"",
                     fecha_hora as ""Fecha"",
@@ -504,7 +482,6 @@ namespace SistemaBanco
                 FROM movimientos_financieros
                 WHERE 1=1";
 
-                // Aplicar los mismos filtros
                 if (filtroTipo != "TODOS")
                 {
                     query += $" AND tipo_operacion = '{filtroTipo}'";
@@ -528,15 +505,13 @@ namespace SistemaBanco
                 }
 
                 query += $" ORDER BY {ordenActual}";
-                
-                // BAN-45: Agregar LIMIT y OFFSET para paginación
+
                 int offset = (paginaActual - 1) * registrosPorPagina;
                 query += $" LIMIT {registrosPorPagina} OFFSET {offset}";
 
                 DataTable dt = Database.ExecuteQuery(query);
                 dgvMovimientos.DataSource = dt;
 
-                // BAN-39: Formato de columnas
                 if (dgvMovimientos.Columns.Contains("Fecha"))
                     dgvMovimientos.Columns["Fecha"].DefaultCellStyle.Format = "dd/MM/yyyy HH:mm";
 
@@ -547,7 +522,6 @@ namespace SistemaBanco
                     dgvMovimientos.Columns["Monto"].DefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
                 }
 
-                // Colorear estados (BAN-27)
                 foreach (DataGridViewRow row in dgvMovimientos.Rows)
                 {
                     string estado = row.Cells["Estado"].Value?.ToString() ?? "";
@@ -568,13 +542,10 @@ namespace SistemaBanco
                     }
                 }
 
-                // BAN-40: Actualizar resumen ejecutivo (con todos los datos, no solo la página actual)
                 ActualizarResumenCompleto();
 
-                // BAN-45: Actualizar información de paginación
                 ActualizarInfoPaginacion();
 
-                // BAN-39: Mensaje si no hay resultados
                 if (dt.Rows.Count == 0)
                 {
                     lblTotalMovimientos.Text = "No se encontraron movimientos";
@@ -588,7 +559,6 @@ namespace SistemaBanco
             }
         }
 
-        // BAN-40: Actualizar resumen con TODOS los datos (no solo página actual)
         private void ActualizarResumenCompleto()
         {
             try
@@ -600,7 +570,6 @@ namespace SistemaBanco
                 FROM movimientos_financieros
                 WHERE 1=1";
 
-                // Aplicar los mismos filtros
                 if (filtroTipo != "TODOS")
                 {
                     queryResumen += $" AND tipo_operacion = '{filtroTipo}'";
@@ -624,7 +593,7 @@ namespace SistemaBanco
                 }
 
                 DataTable dtResumen = Database.ExecuteQuery(queryResumen);
-                
+
                 if (dtResumen.Rows.Count > 0)
                 {
                     int totalMovimientos = Convert.ToInt32(dtResumen.Rows[0]["total"]);
@@ -639,7 +608,6 @@ namespace SistemaBanco
                     lblTotalAbonos.Text = totalAbonos.ToString("C2");
                     lblSaldoResultante.Text = saldoResultante.ToString("C2");
 
-                    // Colorear saldo según sea positivo o negativo
                     lblSaldoResultante.ForeColor = saldoResultante >= 0 ? 
                         Color.FromArgb(40, 167, 69) : Color.FromArgb(220, 53, 69);
                 }
@@ -653,15 +621,11 @@ namespace SistemaBanco
             }
         }
 
-
-
-        // BAN-37: Búsqueda en tiempo real
         private void TxtBusqueda_TextChanged(object sender, EventArgs e)
         {
             CargarMovimientos();
         }
 
-        // BAN-38: Limpiar todos los filtros
         private void LimpiarTodosFiltros()
         {
             txtBusqueda.Clear();
@@ -672,11 +636,10 @@ namespace SistemaBanco
             CargarMovimientos();
         }
 
-        // BAN-34: Ordenamiento dinámico
         private void DgvMovimientos_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             string columnName = dgvMovimientos.Columns[e.ColumnIndex].Name;
-            
+
             if (columnName == "Fecha")
             {
                 ordenActual = ordenActual.Contains("DESC") ? "fecha_hora ASC" : "fecha_hora DESC";
@@ -689,9 +652,6 @@ namespace SistemaBanco
             }
         }
 
-        // ============================================
-        // BAN-41: DETALLES EXPANDIBLES (MODAL)
-        // ============================================
         private void DgvMovimientos_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0) return;
@@ -722,7 +682,6 @@ namespace SistemaBanco
 
                 DataRow row = dt.Rows[0];
 
-                // Crear modal de detalles
                 Form modalDetalles = new Form
                 {
                     Text = $"Detalles del Movimiento - {folio}",
@@ -752,7 +711,6 @@ namespace SistemaBanco
 
                 panelHeader.Controls.Add(lblTituloModal);
 
-                // Panel de contenido con scroll
                 Panel panelContenido = new Panel
                 {
                     Location = new Point(20, 80),
@@ -763,7 +721,6 @@ namespace SistemaBanco
 
                 int yPos = 10;
 
-                // Información del movimiento
                 AgregarCampoDetalle(panelContenido, "Fecha y Hora:", row["fecha_hora"].ToString(), ref yPos);
                 AgregarCampoDetalle(panelContenido, "Tipo de Operación:", row["tipo_operacion"].ToString(), ref yPos);
                 AgregarCampoDetalle(panelContenido, "Cuenta Ordenante:", row["cuenta_ordenante"].ToString(), ref yPos);
@@ -776,7 +733,6 @@ namespace SistemaBanco
                 AgregarCampoDetalle(panelContenido, "Cuenta Contable:", row["cuenta_contable"].ToString(), ref yPos);
                 AgregarCampoDetalle(panelContenido, "Estado:", row["estado"].ToString(), ref yPos);
 
-                // Panel de botones
                 Panel panelBotones = new Panel
                 {
                     Location = new Point(20, 510),
@@ -784,7 +740,6 @@ namespace SistemaBanco
                     BackColor = Color.WhiteSmoke
                 };
 
-                // BAN-42: Botón descargar comprobante PDF
                 Button btnDescargarPDF = new Button
                 {
                     Text = "📄 Descargar Comprobante PDF",
@@ -798,7 +753,6 @@ namespace SistemaBanco
                 btnDescargarPDF.FlatAppearance.BorderSize = 0;
                 btnDescargarPDF.Click += (s, e) => DescargarComprobantePDF(folio);
 
-                // BAN-43: Botón editar (solo usuarios autorizados)
                 Button btnEditar = new Button
                 {
                     Text = "✏️ Editar",
@@ -813,7 +767,6 @@ namespace SistemaBanco
                 btnEditar.FlatAppearance.BorderSize = 0;
                 btnEditar.Click += (s, e) => EditarMovimiento(folio, modalDetalles);
 
-                // BAN-44: Botón eliminar (solo usuarios autorizados)
                 Button btnEliminar = new Button
                 {
                     Text = "🗑️ Eliminar",
@@ -877,9 +830,6 @@ namespace SistemaBanco
             yPos += 45;
         }
 
-        // ============================================
-        // BAN-42: DESCARGAR COMPROBANTE PDF
-        // ============================================
         private void DescargarComprobantePDF(string folio)
         {
             try
@@ -891,7 +841,6 @@ namespace SistemaBanco
 
                 DataRow row = dt.Rows[0];
 
-                // Crear contenido del comprobante
                 string contenido = $@"
 ═══════════════════════════════════════════════════════
             COMPROBANTE DE MOVIMIENTO FINANCIERO
@@ -935,17 +884,14 @@ Generado el: {DateTime.Now:dd/MM/yyyy HH:mm:ss}
             }
         }
 
-        // ============================================
-        // BAN-43: EDITAR MOVIMIENTO
-        // ============================================
         private bool EsUsuarioAutorizado()
         {
-            // Verificar si el usuario tiene rol de Gerente o Administrador
+
             try
             {
                 string query = $@"SELECT rol FROM usuarios WHERE usuario = '{FormLogin.NombreUsuario}'";
                 DataTable dt = Database.ExecuteQuery(query);
-                
+
                 if (dt.Rows.Count > 0)
                 {
                     string rol = dt.Rows[0]["rol"].ToString();
@@ -953,7 +899,7 @@ Generado el: {DateTime.Now:dd/MM/yyyy HH:mm:ss}
                 }
             }
             catch { }
-            
+
             return false;
         }
 
@@ -968,7 +914,6 @@ Generado el: {DateTime.Now:dd/MM/yyyy HH:mm:ss}
 
                 DataRow row = dt.Rows[0];
 
-                // Crear formulario de edición
                 Form formEditar = new Form
                 {
                     Text = $"Editar Movimiento - {folio}",
@@ -982,7 +927,6 @@ Generado el: {DateTime.Now:dd/MM/yyyy HH:mm:ss}
 
                 int yPos = 20;
 
-                // Campos editables
                 Label lblConcepto = new Label { Text = "Concepto:", Location = new Point(20, yPos), Size = new Size(150, 20) };
                 TextBox txtConcepto = new TextBox { Text = row["concepto"].ToString(), Location = new Point(180, yPos), Size = new Size(380, 25) };
                 yPos += 40;
@@ -1073,9 +1017,6 @@ Generado el: {DateTime.Now:dd/MM/yyyy HH:mm:ss}
             }
         }
 
-        // ============================================
-        // BAN-44: ELIMINAR CON AUDITORÍA
-        // ============================================
         private void EliminarMovimiento(string folio, Form modalPadre)
         {
             try
@@ -1089,7 +1030,7 @@ Generado el: {DateTime.Now:dd/MM/yyyy HH:mm:ss}
 
                 if (resultado == DialogResult.Yes)
                 {
-                    // Soft delete: marcar como eliminado en lugar de borrar
+
                     string updateQuery = $@"
                         UPDATE movimientos_financieros 
                         SET estado = 'ELIMINADO',
@@ -1109,9 +1050,6 @@ Generado el: {DateTime.Now:dd/MM/yyyy HH:mm:ss}
             }
         }
 
-        // ============================================
-        // BAN-45: PAGINACIÓN
-        // ============================================
         private void CambiarPagina(int direccion)
         {
             int nuevaPagina = paginaActual + direccion;
@@ -1132,9 +1070,6 @@ Generado el: {DateTime.Now:dd/MM/yyyy HH:mm:ss}
             }
         }
 
-        // ============================================
-        // BAN-48: ACTUALIZACIÓN AUTOMÁTICA
-        // ============================================
         private void IniciarActualizacionAutomatica()
         {
             timerActualizacion = new System.Windows.Forms.Timer();
@@ -1156,9 +1091,6 @@ Generado el: {DateTime.Now:dd/MM/yyyy HH:mm:ss}
             }
         }
 
-        // ============================================
-        // BAN-50: REFRESCAR MANUAL
-        // ============================================
         private void RefrescarManual()
         {
             CargarMovimientos();
@@ -1166,18 +1098,14 @@ Generado el: {DateTime.Now:dd/MM/yyyy HH:mm:ss}
             CustomMessageBox.Show("Actualizado", "Los datos se han actualizado correctamente.", MessageBoxIcon.Information);
         }
 
-        // ============================================
-        // BAN-46 y BAN-47: EXPORTACIÓN CON VISTA PREVIA
-        // ============================================
         private void ExportarDatos(string formato)
         {
             try
             {
-                // BAN-47: Mostrar vista previa antes de exportar
+
                 if (!MostrarVistaPrevia())
                     return;
 
-                // Obtener todos los datos con los filtros aplicados (sin paginación)
                 string query = @"SELECT 
                     folio, fecha_hora, tipo_operacion, concepto, beneficiario, 
                     importe, moneda, estado, referencia
@@ -1235,12 +1163,11 @@ Generado el: {DateTime.Now:dd/MM/yyyy HH:mm:ss}
             }
         }
 
-        // BAN-47: Vista previa antes de exportar
         private bool MostrarVistaPrevia()
         {
             try
             {
-                // Obtener primeras 20 filas para vista previa
+
                 string queryPreview = @"SELECT 
                     folio, fecha_hora, tipo_operacion, beneficiario, importe
                 FROM movimientos_financieros
@@ -1396,13 +1323,11 @@ Generado el: {DateTime.Now:dd/MM/yyyy HH:mm:ss}
         {
             try
             {
-                // Exportar como CSV (compatible con Excel)
+
                 System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
-                // Encabezados
                 sb.AppendLine("Folio,Fecha,Tipo,Concepto,Beneficiario,Importe,Moneda,Estado,Referencia");
 
-                // Datos
                 foreach (DataRow row in dt.Rows)
                 {
                     sb.AppendLine($"\"{row["folio"]}\",\"{row["fecha_hora"]}\",\"{row["tipo_operacion"]}\",\"{row["concepto"]}\",\"{row["beneficiario"]}\",{row["importe"]},\"{row["moneda"]}\",\"{row["estado"]}\",\"{row["referencia"]}\"");

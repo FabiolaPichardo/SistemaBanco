@@ -37,7 +37,6 @@ namespace SistemaBanco
             this.MaximizeBox = false;
             this.BackColor = BankTheme.LightGray;
 
-            // Panel superior con logo y título
             Panel headerPanel = new Panel
             {
                 Location = new System.Drawing.Point(0, 0),
@@ -76,7 +75,6 @@ namespace SistemaBanco
 
             headerPanel.Controls.AddRange(new Control[] { lblLogo, lblTitulo, lblSubtitulo });
 
-            // Panel de login (card)
             Panel loginCard = BankTheme.CreateCard(150, 180, 400, 430);
 
             Label lblLoginTitle = new Label
@@ -126,7 +124,6 @@ namespace SistemaBanco
                 ForeColor = BankTheme.TextSecondary
             };
 
-            // Crear TextBox de contraseña
             TextBox txtPassword = new TextBox
             {
                 Name = "txtPassword",
@@ -144,7 +141,6 @@ namespace SistemaBanco
                 BorderStyle = BorderStyle.FixedSingle
             };
 
-            // Asignar eventos después de declarar ambos controles
             txtUsuario.TextChanged += (s, e) => ValidarCampos(txtUsuario, txtPassword, btnLogin);
             txtPassword.TextChanged += (s, e) => ValidarCampos(txtUsuario, txtPassword, btnLogin);
 
@@ -166,7 +162,6 @@ namespace SistemaBanco
 
             passwordPanel.Controls.AddRange(new Control[] { txtPassword, btnTogglePassword });
 
-            // Checkbox mostrar contraseña (alternativa)
             chkMostrarPassword = new CheckBox
             {
                 Text = "Mostrar contraseña",
@@ -176,7 +171,6 @@ namespace SistemaBanco
                 Visible = false // Usar el botón de ojo en su lugar
             };
 
-            // Link recuperar contraseña
             LinkLabel linkRecuperar = new LinkLabel
             {
                 Text = "¿Olvidaste tu contraseña?",
@@ -233,7 +227,6 @@ namespace SistemaBanco
                 btnLogin, btnRegistrar, btnSalir
             });
 
-            // Footer
             Label lblFooter = new Label
             {
                 Text = "© 2025 Módulo Banco",
@@ -244,7 +237,6 @@ namespace SistemaBanco
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter
             };
 
-            // Eventos
             txtPassword.KeyPress += (s, e) =>
             {
                 if (e.KeyChar == (char)Keys.Enter)
@@ -267,7 +259,7 @@ namespace SistemaBanco
 
                 try
                 {
-                    // Verificar si el usuario existe
+
                     string queryUsuario = "SELECT id_usuario, contraseña, nombre_completo, estatus, bloqueado_hasta, intentos_fallidos, rol FROM usuarios WHERE usuario = @user";
                     DataTable dtUsuario = Database.ExecuteQuery(queryUsuario, new NpgsqlParameter("@user", usuario));
 
@@ -285,8 +277,7 @@ namespace SistemaBanco
                     bool estatus = Convert.ToBoolean(dtUsuario.Rows[0]["estatus"]);
                     int intentosFallidos = Convert.ToInt32(dtUsuario.Rows[0]["intentos_fallidos"]);
                     object bloqueadoHasta = dtUsuario.Rows[0]["bloqueado_hasta"];
-                    
-                    // Leer rol de forma segura (puede no existir la columna)
+
                     string rol = "Cliente";
                     try
                     {
@@ -300,18 +291,17 @@ namespace SistemaBanco
                         rol = "Cliente"; // Valor por defecto si hay error
                     }
 
-                    // Verificar si está bloqueado
                     if (bloqueadoHasta != DBNull.Value)
                     {
                         DateTime fechaBloqueo = Convert.ToDateTime(bloqueadoHasta);
                         if (DateTime.Now < fechaBloqueo)
                         {
-                            // Mostrar timer
+
                             tiempoDesbloqueo = fechaBloqueo;
                             timerPanel.Visible = true;
                             btnLogin.Enabled = false;
                             countdownTimer.Start();
-                            
+
                             TimeSpan tiempoRestante = fechaBloqueo - DateTime.Now;
                             CustomMessageBox.Show("Cuenta Bloqueada", 
                                 $"Cuenta bloqueada temporalmente tras 3 intentos fallidos.\n\nTiempo restante: {tiempoRestante.Minutes} minutos y {tiempoRestante.Seconds} segundos.", 
@@ -320,7 +310,7 @@ namespace SistemaBanco
                         }
                         else
                         {
-                            // Desbloquear cuenta
+
                             Database.ExecuteNonQuery("UPDATE usuarios SET bloqueado_hasta = NULL, intentos_fallidos = 0 WHERE id_usuario = @id",
                                 new NpgsqlParameter("@id", idUsuario));
                             intentosFallidos = 0;
@@ -329,7 +319,6 @@ namespace SistemaBanco
                         }
                     }
 
-                    // Verificar si está activo
                     if (!estatus)
                     {
                         CustomMessageBox.Show("Cuenta Desactivada", 
@@ -338,14 +327,13 @@ namespace SistemaBanco
                         return;
                     }
 
-                    // Verificar contraseña
                     if (password != passwordDB)
                     {
                         intentosFallidos++;
-                        
+
                         if (intentosFallidos >= 3)
                         {
-                            // Bloquear cuenta por 30 minutos (BAN-3)
+
                             DateTime bloqueadoHastaFecha = DateTime.Now.AddMinutes(30);
                             Database.ExecuteNonQuery(@"UPDATE usuarios SET intentos_fallidos = @intentos, bloqueado_hasta = @hasta 
                                                       WHERE id_usuario = @id",
@@ -353,7 +341,6 @@ namespace SistemaBanco
                                 new NpgsqlParameter("@hasta", bloqueadoHastaFecha),
                                 new NpgsqlParameter("@id", idUsuario));
 
-                            // Mostrar timer
                             tiempoDesbloqueo = bloqueadoHastaFecha;
                             timerPanel.Visible = true;
                             btnLogin.Enabled = false;
@@ -376,7 +363,6 @@ namespace SistemaBanco
                         return;
                     }
 
-                    // Login exitoso - Resetear intentos fallidos
                     Database.ExecuteNonQuery(@"UPDATE usuarios SET intentos_fallidos = 0, ultima_sesion = @ahora 
                                               WHERE id_usuario = @id",
                         new NpgsqlParameter("@ahora", DateTime.Now),
@@ -387,7 +373,6 @@ namespace SistemaBanco
                     UsuarioActual = usuario; // Guardar nombre de usuario (login)
                     RolUsuario = rol;
 
-                    // Obtener cuenta del usuario
                     string queryCuenta = "SELECT id_cuenta FROM cuentas WHERE id_usuario = @id";
                     DataTable dtCuenta = Database.ExecuteQuery(queryCuenta, new NpgsqlParameter("@id", IdUsuarioActual));
                     if (dtCuenta.Rows.Count > 0)
@@ -398,8 +383,7 @@ namespace SistemaBanco
                     this.Hide();
                     FormMenu menuForm = new FormMenu();
                     menuForm.ShowDialog();
-                    
-                    // Limpiar campos al volver del menú
+
                     txtUsuario.Text = "";
                     txtPassword.Text = "";
                     btnLogin.Enabled = false;
@@ -415,7 +399,6 @@ namespace SistemaBanco
 
             btnSalir.Click += (s, e) => Application.Exit();
 
-            // Panel de Timer (inicialmente oculto) - Centrado debajo del login
             timerPanel = new Panel
             {
                 Location = new System.Drawing.Point(250, 630),
@@ -457,7 +440,6 @@ namespace SistemaBanco
 
             timerPanel.Controls.AddRange(new Control[] { lblTimerTitle, lblTimerMessage, lblTimer });
 
-            // Timer para cuenta regresiva
             countdownTimer = new System.Windows.Forms.Timer();
             countdownTimer.Interval = 1000; // 1 segundo
             countdownTimer.Tick += CountdownTimer_Tick;
@@ -471,7 +453,7 @@ namespace SistemaBanco
 
             if (tiempoRestante.TotalSeconds <= 0)
             {
-                // Tiempo terminado
+
                 countdownTimer.Stop();
                 timerPanel.Visible = false;
                 btnLogin.Enabled = true;
@@ -481,14 +463,14 @@ namespace SistemaBanco
             }
             else
             {
-                // Actualizar timer
+
                 lblTimer.Text = $"{tiempoRestante.Minutes:D2}:{tiempoRestante.Seconds:D2}";
             }
         }
 
         private void ValidarCampos(TextBox txtUsuario, TextBox txtPassword, Button btnLogin)
         {
-            // Habilitar botón solo si ambos campos tienen contenido
+
             btnLogin.Enabled = !string.IsNullOrWhiteSpace(txtUsuario.Text) &&
                               !string.IsNullOrWhiteSpace(txtPassword.Text);
         }

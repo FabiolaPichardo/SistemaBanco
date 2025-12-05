@@ -24,11 +24,9 @@ namespace SistemaBanco
             btnHome.FlatAppearance.BorderSize = 0;
             btnHome.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 58, 138); // Azul más oscuro
 
-            // Tooltip
             ToolTip tooltip = new ToolTip();
             tooltip.SetToolTip(btnHome, "Regresar al Dashboard");
 
-            // Evento click
             btnHome.Click += (s, e) =>
             {
                 currentForm.Close();

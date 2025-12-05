@@ -34,7 +34,6 @@ namespace SistemaBanco
             this.MaximizeBox = false;
             this.MinimizeBox = false;
 
-            // Header
             Panel headerPanel = new Panel
             {
                 Location = new Point(0, 0),
@@ -54,12 +53,10 @@ namespace SistemaBanco
 
             headerPanel.Controls.Add(lblTitulo);
 
-            // Panel de detalles
             Panel detallesPanel = BankTheme.CreateCard(20, 90, 760, 450);
 
             int yPos = 20;
 
-            // Estado actual
             Label lblEstadoLabel = new Label
             {
                 Text = "Estado Actual:",
@@ -79,7 +76,6 @@ namespace SistemaBanco
 
             yPos += 45;
 
-            // Separador
             Panel separador1 = new Panel
             {
                 Location = new Point(20, yPos),
@@ -89,7 +85,6 @@ namespace SistemaBanco
 
             yPos += 15;
 
-            // Información de la solicitud (se llenará dinámicamente)
             infoPanel = new Panel
             {
                 Location = new Point(20, yPos),
@@ -99,7 +94,6 @@ namespace SistemaBanco
 
             yPos += 210;
 
-            // Comentarios de autorización
             Label lblComentarios = new Label
             {
                 Text = "Comentarios de Autorización:",
@@ -121,7 +115,6 @@ namespace SistemaBanco
 
             yPos += 70;
 
-            // Motivo de rechazo (solo visible si se rechaza)
             lblMotivoRechazo = new Label
             {
                 Text = "Motivo de Rechazo:",
@@ -148,7 +141,6 @@ namespace SistemaBanco
                 lblComentarios, txtComentarios, lblMotivoRechazo, txtMotivoRechazo
             });
 
-            // Botones de acción
             botonesPanel = new Panel
             {
                 Location = new Point(20, 550),
@@ -271,11 +263,9 @@ namespace SistemaBanco
                 DataRow row = dt.Rows[0];
                 estadoActual = row["estado"].ToString();
 
-                // Actualizar estado visual
                 lblEstadoActual.Text = estadoActual;
                 ActualizarColorEstado();
 
-                // Llenar panel de información
                 infoPanel.Controls.Clear();
 
                 int yPos = 0;
@@ -289,7 +279,7 @@ namespace SistemaBanco
                 AgregarCampo(infoPanel, "Tasa de Cambio:", Convert.ToDecimal(row["tasa_cambio"]).ToString("N4"), ref yPos);
                 AgregarCampo(infoPanel, "Monto en Divisa:", $"{row["simbolo"]} {Convert.ToDecimal(row["monto_divisa"]):N2}", ref yPos);
                 AgregarCampo(infoPanel, "Fecha Solicitud:", Convert.ToDateTime(row["fecha_solicitud"]).ToString("dd/MM/yyyy HH:mm"), ref yPos);
-                
+
                 if (row["fecha_expiracion"] != DBNull.Value)
                 {
                     AgregarCampo(infoPanel, "Fecha Expiración:", Convert.ToDateTime(row["fecha_expiracion"]).ToString("dd/MM/yyyy HH:mm"), ref yPos);
@@ -304,7 +294,6 @@ namespace SistemaBanco
                     }
                 }
 
-                // Cargar comentarios existentes
                 if (row["comentarios_autorizacion"] != DBNull.Value)
                 {
                     txtComentarios.Text = row["comentarios_autorizacion"].ToString();
@@ -317,7 +306,6 @@ namespace SistemaBanco
                     txtMotivoRechazo.Visible = true;
                 }
 
-                // Deshabilitar botones si ya está procesada
                 if (estadoActual == "Autorizada" || estadoActual == "Rechazada" || estadoActual == "Expirada")
                 {
                     foreach (Control ctrl in botonesPanel.Controls)
@@ -393,7 +381,7 @@ namespace SistemaBanco
         {
             try
             {
-                // Validaciones
+
                 if (estadoActual == "Autorizada" || estadoActual == "Rechazada" || estadoActual == "Expirada")
                 {
                     CustomMessageBox.Show("Operación No Permitida",
@@ -410,7 +398,6 @@ namespace SistemaBanco
                     return;
                 }
 
-                // Confirmar acción
                 string mensaje = nuevoEstado == "Autorizada" 
                     ? "¿Está seguro de autorizar esta operación en divisa?" 
                     : nuevoEstado == "Rechazada"
@@ -423,7 +410,6 @@ namespace SistemaBanco
                 if (result != DialogResult.Yes)
                     return;
 
-                // Actualizar en base de datos
                 string query = @"
                     UPDATE solicitudes_autorizacion_divisas 
                     SET estado = @estado,
@@ -441,7 +427,6 @@ namespace SistemaBanco
                     new NpgsqlParameter("@motivoRechazo", txtMotivoRechazo.Text ?? ""),
                     new NpgsqlParameter("@idSolicitud", idSolicitud));
 
-                // Registrar en auditoría
                 AuditLogger.Log(AuditLogger.AuditAction.CambioConfiguracion,
                     $"AUTORIZACION_DIVISA_{nuevoEstado.ToUpper()} - Solicitud ID {idSolicitud} - Estado: {nuevoEstado}");
 

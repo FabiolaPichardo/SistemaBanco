@@ -34,14 +34,13 @@ namespace SistemaBanco
         private void InitializeComponent()
         {
             this.Text = "Módulo Banco - Registro de Movimientos Financieros";
-            this.ClientSize = new System.Drawing.Size(900, 750);
+            this.ClientSize = new System.Drawing.Size(900, 900);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = BankTheme.LightGray;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.AutoScroll = true;
 
-            // Header
             Panel headerPanel = new Panel
             {
                 Location = new System.Drawing.Point(0, 0),
@@ -72,9 +71,8 @@ namespace SistemaBanco
 
             headerPanel.Controls.AddRange(new Control[] { lblLogo, lblTitulo });
 
-            // SECCIÓN 1: DATOS GENERALES
             Panel seccionGenerales = BankTheme.CreateCard(50, 120, 800, 180);
-            
+
             Label lblSeccion1 = new Label
             {
                 Text = "📋 DATOS GENERALES",
@@ -84,7 +82,6 @@ namespace SistemaBanco
                 ForeColor = BankTheme.PrimaryBlue
             };
 
-            // Tipo de Operación (BAN-25)
             Label lblTipoOp = new Label
             {
                 Text = "Tipo de Operación *",
@@ -106,7 +103,6 @@ namespace SistemaBanco
                 "ABONO - Ingreso (Depósitos de clientes)" 
             });
 
-            // Folio (BAN-23, BAN-26)
             Label lblFolio = new Label
             {
                 Text = "Folio Único (Automático)",
@@ -125,7 +121,6 @@ namespace SistemaBanco
                 BackColor = Color.FromArgb(240, 240, 240)
             };
 
-            // Fecha/Hora (BAN-26)
             Label lblFecha = new Label
             {
                 Text = "Fecha y Hora (Automático)",
@@ -149,9 +144,8 @@ namespace SistemaBanco
                 lblSeccion1, lblTipoOp, cmbTipoOperacion, lblFolio, txtFolio, lblFecha, dtpFecha 
             });
 
-            // SECCIÓN 2: DATOS DE LA TRANSACCIÓN
             Panel seccionTransaccion = BankTheme.CreateCard(50, 320, 800, 320);
-            
+
             Label lblSeccion2 = new Label
             {
                 Text = "💰 DATOS DE LA TRANSACCIÓN",
@@ -161,7 +155,6 @@ namespace SistemaBanco
                 ForeColor = BankTheme.PrimaryBlue
             };
 
-            // Cuenta Ordenante (BAN-26)
             Label lblCuentaOrd = new Label
             {
                 Text = "Cuenta Ordenante *",
@@ -179,7 +172,6 @@ namespace SistemaBanco
                 Font = BankTheme.BodyFont
             };
 
-            // Cuenta Beneficiaria (BAN-26)
             Label lblCuentaBen = new Label
             {
                 Text = "Cuenta Beneficiaria *",
@@ -200,7 +192,6 @@ namespace SistemaBanco
             BankTheme.StyleTextBox(txtCuentaBeneficiaria);
             txtCuentaBeneficiaria.TextChanged += TxtCuentaBeneficiaria_TextChanged;
 
-            // Beneficiario (BAN-26)
             Label lblBeneficiario = new Label
             {
                 Text = "Beneficiario *",
@@ -220,7 +211,6 @@ namespace SistemaBanco
             };
             BankTheme.StyleTextBox(txtBeneficiario);
 
-            // Importe (BAN-26)
             Label lblImporte = new Label
             {
                 Text = "Importe *",
@@ -246,7 +236,6 @@ namespace SistemaBanco
                     e.Handled = true;
             };
 
-            // Moneda (BAN-26)
             Label lblMoneda = new Label
             {
                 Text = "Moneda *",
@@ -266,7 +255,6 @@ namespace SistemaBanco
             cmbMoneda.Items.AddRange(new string[] { "MXN", "USD", "EUR" });
             cmbMoneda.SelectedIndex = 0;
 
-            // Concepto (BAN-26)
             Label lblConcepto = new Label
             {
                 Text = "Concepto *",
@@ -286,7 +274,6 @@ namespace SistemaBanco
             };
             BankTheme.StyleTextBox(txtConcepto);
 
-            // Referencia/PO/Factura (BAN-26)
             Label lblReferencia = new Label
             {
                 Text = "Referencia / PO / Factura",
@@ -312,9 +299,8 @@ namespace SistemaBanco
                 lblConcepto, txtConcepto, lblReferencia, txtReferencia
             });
 
-            // SECCIÓN 3: CONTABILIDAD Y CONTROL
             Panel seccionControl = BankTheme.CreateCard(50, 660, 800, 140);
-            
+
             Label lblSeccion3 = new Label
             {
                 Text = "📊 CONTABILIDAD Y CONTROL",
@@ -324,7 +310,6 @@ namespace SistemaBanco
                 ForeColor = BankTheme.PrimaryBlue
             };
 
-            // Cuenta Contable (BAN-26)
             Label lblCuentaCont = new Label
             {
                 Text = "Cuenta Contable (ERP) *",
@@ -342,7 +327,6 @@ namespace SistemaBanco
                 Font = BankTheme.BodyFont
             };
 
-            // Estado (BAN-23)
             Label lblEstadoLabel = new Label
             {
                 Text = "Estado Inicial",
@@ -362,7 +346,6 @@ namespace SistemaBanco
                 TextAlign = ContentAlignment.MiddleLeft
             };
 
-            // Usuario (BAN-26)
             Label lblUsuarioLabel = new Label
             {
                 Text = "Usuario Registrado",
@@ -386,11 +369,10 @@ namespace SistemaBanco
                 lblUsuarioLabel, lblUsuario
             });
 
-            // BOTONES (BAN-24)
             Button btnGuardar = new Button
             {
                 Text = "✓ GUARDAR",
-                Location = new System.Drawing.Point(300, 680),
+                Location = new System.Drawing.Point(300, 820),
                 Size = new System.Drawing.Size(150, 45),
                 BackColor = BankTheme.Success,
                 ForeColor = Color.White,
@@ -404,7 +386,7 @@ namespace SistemaBanco
             Button btnCancelar = new Button
             {
                 Text = "✗ CANCELAR",
-                Location = new System.Drawing.Point(470, 680),
+                Location = new System.Drawing.Point(470, 820),
                 Size = new System.Drawing.Size(150, 45),
                 BackColor = Color.Gray,
                 ForeColor = Color.White,
@@ -461,13 +443,13 @@ namespace SistemaBanco
             }
             catch
             {
-                // Si hay error, no hacer nada
+
             }
         }
 
         private void GenerarFolio()
         {
-            // Generar folio único (BAN-23, BAN-26)
+
             string folio = "MOV-" + DateTime.Now.ToString("yyyyMMddHHmmss");
             if (txtFolio != null)
                 txtFolio.Text = folio;
@@ -475,7 +457,7 @@ namespace SistemaBanco
 
         private void CargarDatosIniciales()
         {
-            // Usuario actual (BAN-26) - Mostrar nombre completo
+
             if (lblUsuario != null)
             {
                 try
@@ -493,9 +475,6 @@ namespace SistemaBanco
                 }
             }
 
-
-
-            // Cargar cuentas ordenantes (BAN-26)
             if (cmbCuentaOrdenante != null)
             {
                 cmbCuentaOrdenante.Items.AddRange(new string[] {
@@ -507,7 +486,6 @@ namespace SistemaBanco
                 cmbCuentaOrdenante.SelectedIndex = 0;
             }
 
-            // Cargar cuentas contables (BAN-26)
             if (cmbCuentaContable != null)
             {
                 cmbCuentaContable.Items.AddRange(new string[] {
@@ -524,7 +502,7 @@ namespace SistemaBanco
 
         private void BtnGuardar_Click(object sender, EventArgs e)
         {
-            // Validación obligatoria tipo de operación (BAN-25)
+
             if (cmbTipoOperacion.SelectedIndex == -1)
             {
                 CustomMessageBox.Show("Campo Requerido",
@@ -534,7 +512,6 @@ namespace SistemaBanco
                 return;
             }
 
-            // Validaciones de campos obligatorios (BAN-26)
             if (cmbCuentaOrdenante.SelectedIndex == -1)
             {
                 CustomMessageBox.Show("Campo Requerido", "Seleccione la cuenta ordenante.", MessageBoxIcon.Warning);
@@ -585,13 +562,11 @@ namespace SistemaBanco
             try
             {
                 string tipoOperacion = cmbTipoOperacion.SelectedItem.ToString().StartsWith("CARGO") ? "CARGO" : "ABONO";
-                
-                // Generar referencia automática si está vacía
+
                 string referencia = string.IsNullOrWhiteSpace(txtReferencia.Text) 
                     ? $"REF-{DateTime.Now:yyyyMMddHHmmss}" 
                     : txtReferencia.Text.Trim();
-                
-                // Insertar movimiento financiero (BAN-23, BAN-26)
+
                 string query = @"INSERT INTO movimientos_financieros 
                                 (folio, fecha_hora, tipo_operacion, cuenta_ordenante, cuenta_beneficiaria, 
                                  beneficiario, importe, moneda, concepto, referencia, cuenta_contable, 
@@ -615,7 +590,6 @@ namespace SistemaBanco
                     new NpgsqlParameter("@estado", "PENDIENTE"),
                     new NpgsqlParameter("@usuario", FormLogin.IdUsuarioActual));
 
-                // Confirmación de registro (BAN-24)
                 CustomMessageBox.Show("Movimiento Registrado",
                     $"El movimiento financiero ha sido registrado exitosamente.\n\n" +
                     $"Folio: {txtFolio.Text}\n" +
@@ -629,7 +603,7 @@ namespace SistemaBanco
             }
             catch (Exception ex)
             {
-                // Advertencia si no cumple validaciones (BAN-24)
+
                 CustomMessageBox.Show("Error al Registrar",
                     $"No se pudo registrar el movimiento financiero.\n\nDetalle: {ex.Message}",
                     MessageBoxIcon.Error);

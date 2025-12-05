@@ -25,7 +25,6 @@ namespace SistemaBanco
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
 
-            // Header
             Panel headerPanel = new Panel
             {
                 Location = new System.Drawing.Point(0, 0),
@@ -43,12 +42,10 @@ namespace SistemaBanco
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter
             };
 
-            // Botón de inicio
             HomeButton.AddToForm(this, headerPanel);
 
             headerPanel.Controls.Add(lblTitulo);
 
-            // Card principal
             Panel mainCard = BankTheme.CreateCard(50, 110, 500, 350);
 
             Label lblTipo = new Label
@@ -115,7 +112,6 @@ namespace SistemaBanco
 
             mainCard.Controls.AddRange(new Control[] { lblTipo, cmbTipo, lblMonto, txtMonto, lblConcepto, txtConcepto });
 
-            // Botones
             Button btnGuardar = new Button
             {
                 Text = "✓ GUARDAR",
@@ -154,7 +150,7 @@ namespace SistemaBanco
 
             try
             {
-                // Obtener saldo actual
+
                 string querySaldo = "SELECT saldo FROM cuentas WHERE id_cuenta = @id";
                 DataTable dt = Database.ExecuteQuery(querySaldo, new NpgsqlParameter("@id", FormLogin.IdCuentaActual));
                 decimal saldoActual = Convert.ToDecimal(dt.Rows[0]["saldo"]);
@@ -162,7 +158,6 @@ namespace SistemaBanco
                 string tipo = cmbTipo.SelectedItem.ToString();
                 decimal nuevoSaldo = saldoActual;
 
-                // Calcular nuevo saldo
                 if (tipo == "DEPOSITO" || tipo == "ABONO")
                     nuevoSaldo = saldoActual + monto;
                 else if (tipo == "RETIRO" || tipo == "CARGO")
@@ -175,7 +170,6 @@ namespace SistemaBanco
                     nuevoSaldo = saldoActual - monto;
                 }
 
-                // Registrar movimiento
                 string queryMov = @"INSERT INTO movimientos (id_cuenta, tipo, monto, concepto, saldo_anterior, saldo_nuevo) 
                                    VALUES (@cuenta, @tipo, @monto, @concepto, @saldoAnt, @saldoNuevo)";
                 Database.ExecuteNonQuery(queryMov,
@@ -186,7 +180,6 @@ namespace SistemaBanco
                     new NpgsqlParameter("@saldoAnt", saldoActual),
                     new NpgsqlParameter("@saldoNuevo", nuevoSaldo));
 
-                // Actualizar saldo
                 string queryUpdate = "UPDATE cuentas SET saldo = @saldo WHERE id_cuenta = @id";
                 Database.ExecuteNonQuery(queryUpdate,
                     new NpgsqlParameter("@saldo", nuevoSaldo),

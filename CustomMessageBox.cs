@@ -20,7 +20,6 @@ namespace SistemaBanco
             this.BackColor = BankTheme.White;
             this.ShowInTaskbar = false;
 
-            // Panel de borde
             Panel borderPanel = new Panel
             {
                 Location = new Point(0, 0),
@@ -36,7 +35,6 @@ namespace SistemaBanco
                 BackColor = BankTheme.White
             };
 
-            // Header
             Panel headerPanel = new Panel
             {
                 Location = new Point(0, 0),
@@ -55,7 +53,6 @@ namespace SistemaBanco
                 ForeColor = BankTheme.White
             };
 
-            // Botón X
             Button btnClose = new Button
             {
                 Text = "✕",
@@ -72,7 +69,6 @@ namespace SistemaBanco
 
             headerPanel.Controls.AddRange(new Control[] { lblTitulo, btnClose });
 
-            // Icono
             string iconText = icon == MessageBoxIcon.Error ? "⚠️" :
                             icon == MessageBoxIcon.Warning ? "⚠️" :
                             icon == MessageBoxIcon.Information ? "ℹ️" : "✓";
@@ -86,7 +82,6 @@ namespace SistemaBanco
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
-            // Mensaje
             Label lblMensaje = new Label
             {
                 Text = mensaje,
@@ -97,7 +92,6 @@ namespace SistemaBanco
                 TextAlign = ContentAlignment.MiddleLeft
             };
 
-            // Botón Cerrar
             Button btnCerrar = new Button
             {
                 Text = "CERRAR",

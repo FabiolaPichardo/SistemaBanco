@@ -18,7 +18,7 @@ namespace SistemaBanco
         public FormConfigRolesDivisas()
         {
             InitializeComponent();
-            // Cargar datos después de que los controles estén inicializados
+
             try
             {
                 CargarDivisas();
@@ -41,7 +41,6 @@ namespace SistemaBanco
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
 
-            // Header
             Panel headerPanel = new Panel
             {
                 Location = new Point(0, 0),
@@ -61,7 +60,6 @@ namespace SistemaBanco
 
             headerPanel.Controls.Add(lblTitulo);
 
-            // Panel de nueva configuración
             Panel nuevoPanel = BankTheme.CreateCard(20, 90, 960, 180);
 
             Label lblNuevo = new Label
@@ -173,7 +171,6 @@ namespace SistemaBanco
                 chkActivo, btnAgregar, lblInfo
             });
 
-            // DataGridView de configuraciones existentes
             Label lblExistentes = new Label
             {
                 Text = "Configuraciones Existentes",
@@ -206,7 +203,6 @@ namespace SistemaBanco
             dgvConfiguracion.ColumnHeadersHeight = 40;
             dgvConfiguracion.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(240, 240, 240);
 
-            // Botones inferiores
             Button btnEliminar = new Button
             {
                 Text = "🗑 Eliminar",
@@ -248,7 +244,7 @@ namespace SistemaBanco
         {
             try
             {
-                // Validar que el control esté inicializado
+
                 if (cmbDivisa == null)
                 {
                     System.Diagnostics.Debug.WriteLine("cmbDivisa no está inicializado");
@@ -280,7 +276,7 @@ namespace SistemaBanco
         {
             try
             {
-                // Validar que el control esté inicializado
+
                 if (dgvConfiguracion == null)
                 {
                     System.Diagnostics.Debug.WriteLine("dgvConfiguracion no está inicializado");
@@ -374,7 +370,6 @@ namespace SistemaBanco
                     dgvConfiguracion.Columns["fecha_creacion"].ReadOnly = true;
                 }
 
-                // Hacer todas las demás columnas de solo lectura
                 if (dgvConfiguracion.Columns.Contains("divisa"))
                     dgvConfiguracion.Columns["divisa"].ReadOnly = true;
                 if (dgvConfiguracion.Columns.Contains("nombre_divisa"))
@@ -386,14 +381,12 @@ namespace SistemaBanco
                 if (dgvConfiguracion.Columns.Contains("monto_maximo"))
                     dgvConfiguracion.Columns["monto_maximo"].ReadOnly = true;
 
-                // Agregar evento para guardar cambios en checkbox
                 dgvConfiguracion.CellValueChanged -= DgvConfiguracion_CellValueChanged; // Evitar duplicados
                 dgvConfiguracion.CellValueChanged += DgvConfiguracion_CellValueChanged;
-                
+
                 dgvConfiguracion.CurrentCellDirtyStateChanged -= DgvConfiguracion_CurrentCellDirtyStateChanged;
                 dgvConfiguracion.CurrentCellDirtyStateChanged += DgvConfiguracion_CurrentCellDirtyStateChanged;
 
-                // Colorear filas según estado activo/inactivo
                 dgvConfiguracion.CellFormatting -= DgvConfiguracion_CellFormatting; // Evitar duplicados
                 dgvConfiguracion.CellFormatting += DgvConfiguracion_CellFormatting;
             }
@@ -405,7 +398,7 @@ namespace SistemaBanco
 
         private void DgvConfiguracion_CurrentCellDirtyStateChanged(object sender, EventArgs e)
         {
-            // Confirmar cambios inmediatamente cuando se hace clic en checkbox
+
             if (dgvConfiguracion.IsCurrentCellDirty)
             {
                 dgvConfiguracion.CommitEdit(DataGridViewDataErrorContexts.Commit);
@@ -418,25 +411,21 @@ namespace SistemaBanco
             {
                 if (e.RowIndex < 0) return;
 
-                // Solo procesar cambios en la columna "activo"
                 if (dgvConfiguracion.Columns[e.ColumnIndex].Name == "activo")
                 {
                     int idConfig = Convert.ToInt32(dgvConfiguracion.Rows[e.RowIndex].Cells["id_config"].Value);
                     bool nuevoEstado = Convert.ToBoolean(dgvConfiguracion.Rows[e.RowIndex].Cells["activo"].Value);
 
-                    // Actualizar en la base de datos
                     string query = "UPDATE roles_autorizadores_divisas SET activo = @activo WHERE id_config = @idConfig";
                     Database.ExecuteNonQuery(query,
                         new NpgsqlParameter("@activo", nuevoEstado),
                         new NpgsqlParameter("@idConfig", idConfig));
 
-                    // Registrar en auditoría
                     string divisa = dgvConfiguracion.Rows[e.RowIndex].Cells["divisa"].Value.ToString();
                     string rol = dgvConfiguracion.Rows[e.RowIndex].Cells["rol"].Value.ToString();
                     AuditLogger.Log(AuditLogger.AuditAction.CambioConfiguracion,
                         $"CONFIG_ROL_DIVISA_CAMBIO_ESTADO - Divisa: {divisa}, Rol: {rol}, Nuevo Estado: {(nuevoEstado ? "Activo" : "Inactivo")}");
 
-                    // Recargar para actualizar colores
                     CargarConfiguracion();
                 }
             }
@@ -445,8 +434,7 @@ namespace SistemaBanco
                 CustomMessageBox.Show("Error al Actualizar Estado",
                     $"No se pudo actualizar el estado.\n\nDetalle: {ex.Message}",
                     MessageBoxIcon.Error);
-                
-                // Recargar para revertir cambio
+
                 CargarConfiguracion();
             }
         }
@@ -459,10 +447,10 @@ namespace SistemaBanco
                     dgvConfiguracion.Rows[e.RowIndex].Cells["activo"].Value != null)
                 {
                     bool activo = Convert.ToBoolean(dgvConfiguracion.Rows[e.RowIndex].Cells["activo"].Value);
-                    
+
                     if (!activo)
                     {
-                        // Colorear toda la fila en rojo claro si está inactiva
+
                         e.CellStyle.BackColor = Color.FromArgb(254, 226, 226);
                         e.CellStyle.ForeColor = Color.FromArgb(153, 27, 27);
                     }
@@ -470,7 +458,7 @@ namespace SistemaBanco
             }
             catch
             {
-                // Ignorar errores de formato
+
             }
         }
 
@@ -478,7 +466,7 @@ namespace SistemaBanco
         {
             try
             {
-                // Validaciones
+
                 if (cmbDivisa.SelectedIndex < 0)
                 {
                     CustomMessageBox.Show("Divisa Requerida",
@@ -508,7 +496,6 @@ namespace SistemaBanco
                     montoMax = maxTemp;
                 }
 
-                // Obtener ID de divisa
                 string codigoDivisa = cmbDivisa.SelectedItem.ToString().Split('-')[0].Trim();
                 string queryDivisa = "SELECT id_divisa FROM divisas WHERE codigo = @codigo";
                 DataTable dtDivisa = Database.ExecuteQuery(queryDivisa, 
@@ -522,7 +509,6 @@ namespace SistemaBanco
 
                 int idDivisa = Convert.ToInt32(dtDivisa.Rows[0]["id_divisa"]);
 
-                // Verificar si ya existe la configuración exacta
                 string queryExiste = @"SELECT COUNT(*) FROM roles_autorizadores_divisas 
                                       WHERE id_divisa = @idDivisa AND rol = @rol AND activo = TRUE";
                 DataTable dtExiste = Database.ExecuteQuery(queryExiste,
@@ -537,7 +523,6 @@ namespace SistemaBanco
                     return;
                 }
 
-                // Verificar conflictos de rangos de montos
                 string queryConflicto = @"
                     SELECT COUNT(*) FROM roles_autorizadores_divisas 
                     WHERE id_divisa = @idDivisa 
@@ -548,7 +533,7 @@ namespace SistemaBanco
                         OR (@montoMax BETWEEN monto_minimo AND COALESCE(monto_maximo, 999999999))
                         OR (monto_minimo BETWEEN @montoMin AND COALESCE(@montoMax, 999999999))
                     )";
-                
+
                 DataTable dtConflicto = Database.ExecuteQuery(queryConflicto,
                     new NpgsqlParameter("@idDivisa", idDivisa),
                     new NpgsqlParameter("@rol", cmbRol.SelectedItem.ToString()),
@@ -563,7 +548,6 @@ namespace SistemaBanco
                     return;
                 }
 
-                // Insertar nueva configuración
                 string queryInsert = @"
                     INSERT INTO roles_autorizadores_divisas 
                     (id_divisa, rol, monto_minimo, monto_maximo, activo) 
@@ -576,7 +560,6 @@ namespace SistemaBanco
                     new NpgsqlParameter("@montoMax", (object)montoMax ?? DBNull.Value),
                     new NpgsqlParameter("@activo", chkActivo.Checked));
 
-                // Registrar en auditoría
                 AuditLogger.Log(AuditLogger.AuditAction.CambioConfiguracion,
                     $"CONFIG_ROL_DIVISA_AGREGAR - Divisa: {codigoDivisa}, Rol: {cmbRol.SelectedItem}, Monto: {montoMin}-{montoMax?.ToString() ?? "Sin límite"}");
 
@@ -584,7 +567,6 @@ namespace SistemaBanco
                     "La configuración se ha agregado correctamente.",
                     MessageBoxIcon.Information);
 
-                // Limpiar campos
                 txtMontoMinimo.Text = "0";
                 txtMontoMaximo.Clear();
                 chkActivo.Checked = true;
@@ -625,7 +607,6 @@ namespace SistemaBanco
                 string query = "DELETE FROM roles_autorizadores_divisas WHERE id_config = @idConfig";
                 Database.ExecuteNonQuery(query, new NpgsqlParameter("@idConfig", idConfig));
 
-                // Registrar en auditoría
                 AuditLogger.Log(AuditLogger.AuditAction.CambioConfiguracion,
                     $"CONFIG_ROL_DIVISA_ELIMINAR - ID Config: {idConfig}");
 

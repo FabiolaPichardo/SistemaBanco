@@ -45,9 +45,9 @@ namespace SistemaBanco
             }
             catch (NpgsqlException ex)
             {
-                // Mensajes de error más específicos
+
                 string errorMsg = "Error de base de datos";
-                
+
                 if (ex.Message.Contains("Host") || ex.Message.Contains("host"))
                 {
                     errorMsg = "No se puede conectar al servidor de base de datos.\n\nVerifique:\n1. Que tenga conexión a Internet\n2. Que la configuración en App.config sea correcta\n3. Que el servidor de Supabase esté disponible";
@@ -64,7 +64,7 @@ namespace SistemaBanco
                 {
                     errorMsg = $"Error de base de datos: {ex.Message}";
                 }
-                
+
                 throw new Exception(errorMsg);
             }
             catch (Exception ex)
@@ -91,7 +91,7 @@ namespace SistemaBanco
             catch (NpgsqlException ex)
             {
                 string errorMsg = "Error de base de datos";
-                
+
                 if (ex.Message.Contains("Host") || ex.Message.Contains("host"))
                 {
                     errorMsg = "No se puede conectar al servidor de base de datos.\n\nVerifique su conexión a Internet y la configuración en App.config";
@@ -104,7 +104,7 @@ namespace SistemaBanco
                 {
                     errorMsg = $"Error de base de datos: {ex.Message}";
                 }
-                
+
                 throw new Exception(errorMsg);
             }
         }
@@ -126,7 +126,7 @@ namespace SistemaBanco
             catch (NpgsqlException ex)
             {
                 string errorMsg = "Error de base de datos";
-                
+
                 if (ex.Message.Contains("Host") || ex.Message.Contains("host"))
                 {
                     errorMsg = "No se puede conectar al servidor de base de datos.\n\nVerifique su conexión a Internet y la configuración en App.config";
@@ -135,7 +135,7 @@ namespace SistemaBanco
                 {
                     errorMsg = $"Error de base de datos: {ex.Message}";
                 }
-                
+
                 throw new Exception(errorMsg);
             }
         }

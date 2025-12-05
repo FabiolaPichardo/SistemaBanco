@@ -28,7 +28,7 @@ namespace SistemaBanco
         private void InitializeComponent()
         {
             bool puedeVerHistorico = RoleManager.PuedeVerHistorico(FormLogin.RolUsuario);
-            
+
             this.Text = "Módulo Banco - Revisión de Saldos";
             this.ClientSize = new System.Drawing.Size(900, puedeVerHistorico ? 750 : 650);
             this.StartPosition = FormStartPosition.CenterScreen;
@@ -36,7 +36,6 @@ namespace SistemaBanco
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
 
-            // Header
             Panel headerPanel = new Panel
             {
                 Location = new System.Drawing.Point(0, 0),
@@ -44,17 +43,10 @@ namespace SistemaBanco
                 BackColor = BankTheme.PrimaryBlue
             };
 
-            // Botón de inicio
             HomeButton.AddToForm(this, headerPanel);
 
             string titulo = "REVISIÓN DE SALDOS";
 
-            // Calcular posición centrada para el ícono y título
-            // Ancho total del header: 900px
-            // Ícono: 50px, espacio: 10px, título: ~500px
-            // Total conjunto: ~560px
-            // Centro real considerando todo: (900 - 560) / 2 + ajuste = 250px
-            
             Label lblLogo = new Label
             {
                 Text = "🏦",
@@ -76,7 +68,6 @@ namespace SistemaBanco
 
             headerPanel.Controls.AddRange(new Control[] { lblLogo, lblTitulo });
 
-            // Card principal - Saldo
             Panel mainCard = BankTheme.CreateCard(50, 110, 800, 300);
 
             Label lblCuentaLabel = new Label
@@ -162,7 +153,6 @@ namespace SistemaBanco
                 separador, lblSaldoLabel, lblIndicadorEstado, lblSaldo, lblActualizacion 
             });
 
-            // Panel de filtros (solo para roles con acceso histórico)
             Panel filtrosPanel = null;
             if (puedeVerHistorico)
             {
@@ -170,7 +160,6 @@ namespace SistemaBanco
                 this.Controls.Add(filtrosPanel);
             }
 
-            // Panel de controles
             int controlPanelY = puedeVerHistorico ? 500 : 430;
             Panel controlPanel = new Panel
             {
@@ -206,9 +195,8 @@ namespace SistemaBanco
             BankTheme.StyleButton(btnActualizar, false);
             btnActualizar.Click += (s, e) => CargarSaldo();
 
-            // Botones de exportación según permisos
             bool puedeExportarCompleto = RoleManager.PuedeExportarCompleto(FormLogin.RolUsuario);
-            
+
             Button btnExportarPDF = new Button
             {
                 Text = "📄 PDF",
@@ -246,7 +234,6 @@ namespace SistemaBanco
                 controlPanel.Controls.Add(btnExportarExcel);
             }
 
-            // Botones inferiores
             int btnCerrarY = puedeVerHistorico ? 680 : 580;
             Button btnCerrar = new Button
             {
@@ -277,20 +264,17 @@ namespace SistemaBanco
                     lblCuenta.Text = numeroCuenta;
                     lblTipoCuenta.Text = tipoCuenta;
                     lblSaldo.Text = "$" + saldo.ToString("N2");
-                    
-                    // Calcular tiempo de respuesta
+
                     TimeSpan tiempoRespuesta = DateTime.Now - inicioConsulta;
                     string textoTiempo = tiempoRespuesta.TotalMilliseconds < 1000 
                         ? $"({tiempoRespuesta.TotalMilliseconds:F0}ms)" 
                         : $"({tiempoRespuesta.TotalSeconds:F1}s)";
-                    
+
                     lblActualizacion.Text = $"Última actualización: {DateTime.Now:dd/MM/yyyy} - {DateTime.Now:HH:mm} hrs {textoTiempo}";
                     lblActualizacion.ForeColor = BankTheme.Success;
 
-                    // Actualizar indicador de estado según el saldo
                     ActualizarIndicadorEstado(saldo);
 
-                    // Mostrar mensaje de confirmación si fue actualización manual
                     if (!actualizacionAutomatica || tiempoRespuesta.TotalSeconds > 1)
                     {
                         MostrarNotificacionTemporal("✓ Actualizado correctamente", BankTheme.Success);
@@ -299,7 +283,7 @@ namespace SistemaBanco
             }
             catch (Exception ex)
             {
-                // Marcar como datos desactualizados
+
                 lblActualizacion.Text = "⚠ Datos desactualizados - intente refrescar manualmente";
                 lblActualizacion.ForeColor = BankTheme.Danger;
 
@@ -353,7 +337,7 @@ namespace SistemaBanco
 
         private void MostrarNotificacionTemporal(string mensaje, Color color)
         {
-            // Crear label temporal para notificación
+
             Label lblNotificacion = new Label
             {
                 Text = mensaje,
@@ -369,7 +353,6 @@ namespace SistemaBanco
             this.Controls.Add(lblNotificacion);
             lblNotificacion.BringToFront();
 
-            // Timer para ocultar después de 3 segundos
             System.Windows.Forms.Timer timerNotificacion = new System.Windows.Forms.Timer();
             timerNotificacion.Interval = 3000;
             timerNotificacion.Tick += (s, e) =>
@@ -409,7 +392,7 @@ INFORMACIÓN DEL USUARIO
 
 SALDO DISPONIBLE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  
+
   💰 ${saldo:N2}
 
 INFORMACIÓN DEL REPORTE
@@ -601,10 +584,9 @@ Este reporte es válido únicamente para la fecha indicada
 
         private void MostrarMensajeAccesoRestringido()
         {
-            // Registrar intento de acceso no autorizado (BAN-21)
+
             RegistrarIntentoAccesoNoAutorizado();
 
-            // Banner de restricción
             Panel bannerRestriccion = new Panel
             {
                 Location = new Point(0, 80),
@@ -661,7 +643,6 @@ Este reporte es válido únicamente para la fecha indicada
             this.Controls.Add(bannerRestriccion);
             bannerRestriccion.BringToFront();
 
-            // También mostrar mensaje emergente
             CustomMessageBox.Show("Acceso Restringido",
                 $"Acceso restringido: consulte con un ejecutivo de cuenta o gerente para acceder a saldos históricos.\n\nSu rol actual: {FormLogin.RolUsuario}\n\nRoles con acceso:\n• Ejecutivo\n• Gerente\n• Administrador",
                 MessageBoxIcon.Warning);
@@ -671,11 +652,10 @@ Este reporte es válido únicamente para la fecha indicada
         {
             try
             {
-                // Registrar en logs (BAN-21 - Validación en backend)
+
                 string logQuery = @"INSERT INTO logs_auditoria (id_usuario, accion, detalle, fecha) 
                                    VALUES (@id, @accion, @detalle, @fecha)";
-                
-                // Nota: Esta tabla debe existir en la BD. Si no existe, el error se captura silenciosamente
+
                 Database.ExecuteNonQuery(logQuery,
                     new NpgsqlParameter("@id", FormLogin.IdUsuarioActual),
                     new NpgsqlParameter("@accion", "ACCESO_DENEGADO_HISTORICO"),
@@ -684,8 +664,7 @@ Este reporte es válido únicamente para la fecha indicada
             }
             catch
             {
-                // Si falla el registro de log, no afectar la experiencia del usuario
-                // En producción, esto debería registrarse en un archivo de log local
+
             }
         }
 
@@ -785,7 +764,6 @@ del titular de la cuenta.
                     decimal saldo = Convert.ToDecimal(dt.Rows[0]["saldo"]);
                     string tipoCuenta = dt.Rows[0]["tipo_cuenta"].ToString();
 
-                    // Formato CSV para Excel
                     string contenido = $@"MÓDULO BANCO - REPORTE DE SALDO
 Fecha de generación,{DateTime.Now:dd/MM/yyyy HH:mm:ss}
 

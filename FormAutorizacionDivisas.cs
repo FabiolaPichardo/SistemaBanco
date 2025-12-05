@@ -56,7 +56,6 @@ namespace SistemaBanco
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
 
-            // Header
             Panel headerPanel = new Panel
             {
                 Location = new Point(0, 0),
@@ -66,9 +65,6 @@ namespace SistemaBanco
 
             HomeButton.AddToForm(this, headerPanel);
 
-            // Centrar el título y el ícono en el header (1400px de ancho)
-            // Ícono: 50px, espacio: 10px, título: ~550px = ~610px total
-            // Centro real: (1400 - 610) / 2 = 395px, pero ajustamos más al centro: 450px
             Label lblLogo = new Label
             {
                 Text = "💱",
@@ -90,7 +86,6 @@ namespace SistemaBanco
 
             headerPanel.Controls.AddRange(new Control[] { lblLogo, lblTitulo });
 
-            // Panel de filtros
             Panel filtrosPanel = BankTheme.CreateCard(20, 110, 1360, 140);
 
             Label lblFiltros = new Label
@@ -102,7 +97,6 @@ namespace SistemaBanco
                 ForeColor = BankTheme.PrimaryBlue
             };
 
-            // Fila 1 de filtros
             Label lblFechaInicio = new Label
             {
                 Text = "Fecha Inicio:",
@@ -166,7 +160,6 @@ namespace SistemaBanco
                 Font = BankTheme.BodyFont
             };
 
-            // Fila 2 de filtros
             Label lblDivisa = new Label
             {
                 Text = "Divisa:",
@@ -221,7 +214,6 @@ namespace SistemaBanco
             BankTheme.StyleButton(btnLimpiar, false);
             btnLimpiar.Click += BtnLimpiar_Click;
 
-            // Botón de configuración de roles (solo para Gerentes y Administradores)
             if (RoleManager.PuedeConfigurarRolesDivisas(FormLogin.RolUsuario))
             {
                 btnConfigRoles = new Button
@@ -249,7 +241,6 @@ namespace SistemaBanco
                 lblDivisa, cmbDivisa, lblEstado, cmbEstado, btnBuscar, btnLimpiar
             });
 
-            // Panel de expiración
             Panel expiracionPanel = BankTheme.CreateCard(20, 260, 1360, 70);
 
             Label lblExpiracion = new Label
@@ -293,7 +284,6 @@ namespace SistemaBanco
                 lblExpiracion, dtpExpiracion, btnAplicarExpiracion, lblInfoExpiracion
             });
 
-            // DataGridView
             dgvSolicitudes = new DataGridView
             {
                 Location = new Point(20, 340),
@@ -317,7 +307,6 @@ namespace SistemaBanco
             dgvSolicitudes.ColumnHeadersHeight = 40;
             dgvSolicitudes.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(240, 240, 240);
 
-            // Panel inferior con estadísticas y botones
             Panel bottomPanel = new Panel
             {
                 Location = new Point(20, 700),
@@ -367,7 +356,6 @@ namespace SistemaBanco
                 lblTotalSolicitudes, btnExportarPDF, btnExportarWord, btnExportarExcel
             });
 
-            // Botón cerrar (centrado en ventana de 1400px)
             Button btnCerrar = new Button
             {
                 Text = "CERRAR",
@@ -386,7 +374,7 @@ namespace SistemaBanco
         {
             try
             {
-                // Validar que el control esté inicializado
+
                 if (cmbDivisa == null)
                     return;
 
@@ -421,7 +409,7 @@ namespace SistemaBanco
             }
             catch
             {
-                // Si falla, no afecta la funcionalidad principal
+
             }
         }
 
@@ -429,7 +417,7 @@ namespace SistemaBanco
         {
             try
             {
-                // Validar que los controles estén inicializados
+
                 if (dgvSolicitudes == null || dtpFechaInicio == null || dtpFechaFin == null)
                 {
                     System.Diagnostics.Debug.WriteLine("Controles no inicializados");
@@ -460,7 +448,6 @@ namespace SistemaBanco
 
                 var parametros = new System.Collections.Generic.List<NpgsqlParameter>();
 
-                // Filtro por fechas
                 if (dtpFechaInicio != null && dtpFechaFin != null)
                 {
                     query += " AND s.fecha_solicitud >= @fechaInicio AND s.fecha_solicitud <= @fechaFin";
@@ -468,21 +455,18 @@ namespace SistemaBanco
                     parametros.Add(new NpgsqlParameter("@fechaFin", dtpFechaFin.Value.Date.AddDays(1).AddSeconds(-1)));
                 }
 
-                // Filtro por ID
                 if (txtBuscarID != null && !string.IsNullOrWhiteSpace(txtBuscarID.Text))
                 {
                     query += " AND s.id_transaccion ILIKE @idTransaccion";
                     parametros.Add(new NpgsqlParameter("@idTransaccion", $"%{txtBuscarID.Text}%"));
                 }
 
-                // Filtro por nombre
                 if (txtBuscarNombre != null && !string.IsNullOrWhiteSpace(txtBuscarNombre.Text))
                 {
                     query += " AND u.nombre_completo ILIKE @nombre";
                     parametros.Add(new NpgsqlParameter("@nombre", $"%{txtBuscarNombre.Text}%"));
                 }
 
-                // Filtro por divisa
                 if (cmbDivisa != null && cmbDivisa.SelectedIndex > 0 && cmbDivisa.SelectedItem != null)
                 {
                     string codigoDivisa = cmbDivisa.SelectedItem.ToString().Split('-')[0].Trim();
@@ -490,7 +474,6 @@ namespace SistemaBanco
                     parametros.Add(new NpgsqlParameter("@divisa", codigoDivisa));
                 }
 
-                // Filtro por estado
                 if (cmbEstado != null && cmbEstado.SelectedIndex > 0 && cmbEstado.SelectedItem != null)
                 {
                     query += " AND s.estado = @estado";
@@ -504,8 +487,7 @@ namespace SistemaBanco
                 if (dgvSolicitudes != null)
                 {
                     dgvSolicitudes.DataSource = dt;
-                    
-                    // Configurar columnas solo si hay datos o si la tabla tiene estructura
+
                     if (dt.Columns.Count > 0)
                     {
                         ConfigurarColumnas();
@@ -522,10 +504,10 @@ namespace SistemaBanco
             }
             catch (Exception ex)
             {
-                // Si el error es porque no hay datos, mostrar tabla vacía con encabezados
+
                 if (ex.Message.Contains("does not exist") || ex.Message.Contains("no existe"))
                 {
-                    // Crear tabla vacía con la estructura esperada
+
                     DataTable dtVacia = new DataTable();
                     dtVacia.Columns.Add("id_solicitud", typeof(int));
                     dtVacia.Columns.Add("id_transaccion", typeof(string));
@@ -551,13 +533,13 @@ namespace SistemaBanco
                 }
                 else
                 {
-                    // Mostrar error más detallado para otros tipos de errores
+
                     string errorMsg = $"Error al cargar solicitudes.\n\n";
                     errorMsg += $"Mensaje: {ex.Message}\n\n";
                     errorMsg += $"Tipo: {ex.GetType().Name}\n\n";
                     if (ex.InnerException != null)
                         errorMsg += $"Error interno: {ex.InnerException.Message}\n\n";
-                    
+
                     CustomMessageBox.Show("Error al Cargar Solicitudes", errorMsg, MessageBoxIcon.Error);
                 }
             }
@@ -569,7 +551,6 @@ namespace SistemaBanco
             {
                 if (dgvSolicitudes == null || dgvSolicitudes.Columns.Count == 0) return;
 
-                // Validar que las columnas existan antes de configurarlas
                 if (dgvSolicitudes.Columns.Contains("id_solicitud"))
                     dgvSolicitudes.Columns["id_solicitud"].Visible = false;
 
@@ -644,7 +625,6 @@ namespace SistemaBanco
                     dgvSolicitudes.Columns["autorizador"].Width = 150;
                 }
 
-                // Agregar columna de acciones si el usuario puede autorizar
                 if (RoleManager.PuedeAutorizarDivisas(FormLogin.RolUsuario))
                 {
                     if (!dgvSolicitudes.Columns.Contains("Acciones"))
@@ -664,7 +644,6 @@ namespace SistemaBanco
                     dgvSolicitudes.CellContentClick += DgvSolicitudes_CellContentClick;
                 }
 
-                // Colorear filas según estado
                 dgvSolicitudes.CellFormatting += (s, e) =>
                 {
                     if (dgvSolicitudes.Columns.Contains("estado") && 
@@ -701,7 +680,7 @@ namespace SistemaBanco
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error en ConfigurarColumnas: {ex.Message}");
-                // No mostrar mensaje al usuario, solo registrar en debug
+
             }
         }
 
@@ -725,7 +704,7 @@ namespace SistemaBanco
 
         private void BuscarConValidacion()
         {
-            // Validar fechas
+
             if (dtpFechaInicio.Value > dtpFechaFin.Value)
             {
                 CustomMessageBox.Show("Fechas Inválidas",
@@ -770,13 +749,12 @@ namespace SistemaBanco
             {
                 int actualizadas = 0;
                 int noElegibles = 0;
-                
+
                 foreach (DataGridViewRow row in dgvSolicitudes.SelectedRows)
                 {
                     int idSolicitud = Convert.ToInt32(row.Cells["id_solicitud"].Value);
                     string estado = row.Cells["estado"].Value.ToString();
 
-                    // Solo aplicar a solicitudes pendientes o en revisión
                     if (estado == "Pendiente" || estado == "En Revisión")
                     {
                         string query = @"UPDATE solicitudes_autorizacion_divisas 
@@ -834,7 +812,7 @@ namespace SistemaBanco
                         saveDialog.Filter = "Archivo HTML (*.html)|*.html";
                         saveDialog.FileName = $"Autorizacion_Divisas_{DateTime.Now:yyyyMMdd_HHmmss}.html";
                         saveDialog.Title = "Exportar a PDF (se abrirá en navegador)";
-                        
+
                         if (saveDialog.ShowDialog() == DialogResult.OK)
                         {
                             contenido = GenerarHTMLDivisas();
@@ -849,7 +827,7 @@ namespace SistemaBanco
                     case "Word":
                         saveDialog.Filter = "Documento Word (*.doc)|*.doc";
                         saveDialog.FileName = $"Autorizacion_Divisas_{DateTime.Now:yyyyMMdd_HHmmss}.doc";
-                        
+
                         if (saveDialog.ShowDialog() == DialogResult.OK)
                         {
                             contenido = GenerarWordDivisas();
@@ -863,7 +841,7 @@ namespace SistemaBanco
                     case "Excel":
                         saveDialog.Filter = "Archivo CSV (*.csv)|*.csv";
                         saveDialog.FileName = $"Autorizacion_Divisas_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
-                        
+
                         if (saveDialog.ShowDialog() == DialogResult.OK)
                         {
                             contenido = GenerarCSVDivisas();

@@ -4,12 +4,10 @@ using Npgsql;
 
 namespace SistemaBanco
 {
-    /// <summary>
-    /// Detector de movimientos sospechosos (BAN-57)
-    /// </summary>
+
     public static class SuspiciousActivityDetector
     {
-        // Umbrales configurables
+
         private static decimal MontoAtipicoMinimo = 50000m; // $50,000 MXN
         private static int TransaccionesRepetitivasMax = 5; // 5 transacciones en 1 hora
         private static decimal DesviacionPorcentual = 200m; // 200% del promedio histórico
@@ -22,9 +20,6 @@ namespace SistemaBanco
             Cerrada
         }
 
-        /// <summary>
-        /// Analiza un movimiento y genera alerta si es sospechoso
-        /// </summary>
         public static void AnalizarMovimiento(int idMovimiento, string tipoMovimiento, 
             decimal importe, int idUsuario, string cuentaOrdenante)
         {
@@ -33,14 +28,12 @@ namespace SistemaBanco
                 bool esSospechoso = false;
                 string razon = "";
 
-                // 1. Verificar monto atípico
                 if (importe >= MontoAtipicoMinimo)
                 {
                     esSospechoso = true;
                     razon += $"Monto atípico (${importe:N2} >= ${MontoAtipicoMinimo:N2}). ";
                 }
 
-                // 2. Verificar transacciones repetitivas
                 int transaccionesRecientes = ContarTransaccionesRecientes(idUsuario, cuentaOrdenante);
                 if (transaccionesRecientes >= TransaccionesRepetitivasMax)
                 {
@@ -48,7 +41,6 @@ namespace SistemaBanco
                     razon += $"Transacciones repetitivas ({transaccionesRecientes} en 1 hora). ";
                 }
 
-                // 3. Verificar desviación del perfil histórico
                 decimal promedioHistorico = ObtenerPromedioHistorico(idUsuario);
                 if (promedioHistorico > 0 && importe > (promedioHistorico * (DesviacionPorcentual / 100)))
                 {
@@ -56,7 +48,6 @@ namespace SistemaBanco
                     razon += $"Desviación del perfil histórico ({(importe / promedioHistorico * 100):N0}% del promedio). ";
                 }
 
-                // Si es sospechoso, generar alerta
                 if (esSospechoso)
                 {
                     GenerarAlerta(idMovimiento, tipoMovimiento, importe, idUsuario, razon);
@@ -94,7 +85,6 @@ namespace SistemaBanco
 
                 int idAlerta = Convert.ToInt32(result);
 
-                // Registrar en auditoría
                 AuditLogger.Log(AuditLogger.AuditAction.RegistroMovimiento,
                     $"Alerta generada ID: {idAlerta} - Movimiento: {idMovimiento} - Razón: {razon}",
                     AuditLogger.LogLevel.WARNING,
@@ -112,20 +102,20 @@ namespace SistemaBanco
         {
             try
             {
-                // Obtener correos del área de finanzas
+
                 string query = @"
                     SELECT email FROM usuarios 
                     WHERE rol IN ('Gerente', 'Administrador') 
                     AND estatus = TRUE";
 
                 DataTable dt = Database.ExecuteQuery(query);
-                
+
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     foreach (DataRow row in dt.Rows)
                     {
                         string email = row["email"].ToString();
-                        
+
                         string asunto = $"⚠️ ALERTA: Movimiento Sospechoso Detectado - ID {idMovimiento}";
                         string cuerpo = $@"
                             <h2>Alerta de Movimiento Sospechoso</h2>
@@ -155,7 +145,7 @@ namespace SistemaBanco
             try
             {
                 DateTime hace1Hora = DateTime.Now.AddHours(-1);
-                
+
                 string query = @"
                     SELECT COUNT(*) 
                     FROM movimientos_financieros 
@@ -181,7 +171,7 @@ namespace SistemaBanco
             try
             {
                 DateTime hace30Dias = DateTime.Now.AddDays(-30);
-                
+
                 string query = @"
                     SELECT AVG(importe) 
                     FROM movimientos_financieros 
@@ -200,9 +190,6 @@ namespace SistemaBanco
             }
         }
 
-        /// <summary>
-        /// Actualiza el estado de una alerta
-        /// </summary>
         public static void ActualizarEstadoAlerta(int idAlerta, EstadoAlerta nuevoEstado, 
             string comentarios = "", bool esFalsoPositivo = false)
         {
@@ -237,9 +224,6 @@ namespace SistemaBanco
             }
         }
 
-        /// <summary>
-        /// Establece fecha de expiración/SLA para una alerta
-        /// </summary>
         public static void EstablecerFechaExpiracion(int idAlerta, DateTime fechaExpiracion)
         {
             try

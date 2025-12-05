@@ -42,7 +42,6 @@ namespace SistemaBanco
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
 
-            // Header
             Panel headerPanel = new Panel
             {
                 Location = new System.Drawing.Point(0, 0),
@@ -79,7 +78,6 @@ namespace SistemaBanco
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter
             };
 
-            // Botón Regresar (flecha)
             Button btnRegresar = new Button
             {
                 Text = "←",
@@ -96,7 +94,6 @@ namespace SistemaBanco
 
             headerPanel.Controls.AddRange(new Control[] { btnRegresar, lblLogo, lblTitulo, lblSubtitulo });
 
-            // Panel Paso 1: Identificación y preguntas de seguridad
             panelStep1 = BankTheme.CreateCard(50, 120, 600, 500);
             panelStep1.Visible = true;
 
@@ -127,7 +124,6 @@ namespace SistemaBanco
             BankTheme.StyleTextBox(txtUsuario);
             txtUsuario.Leave += TxtUsuario_Leave;
 
-            // Preguntas de seguridad (inicialmente ocultas)
             Label lblPreguntasTitle = new Label
             {
                 Text = "Preguntas de Seguridad",
@@ -207,7 +203,6 @@ namespace SistemaBanco
                 lblPregunta3, txtRespuesta3, btnContinuarStep1
             });
 
-            // Panel Paso 2: Restablecimiento de contraseña
             panelStep2 = BankTheme.CreateCard(50, 120, 600, 450);
             panelStep2.Visible = false;
 
@@ -302,7 +297,7 @@ namespace SistemaBanco
 
             try
             {
-                // Buscar usuario y sus preguntas de seguridad
+
                 string query = @"SELECT id_usuario, nombre_completo, email,
                                 pregunta_seguridad_1, respuesta_seguridad_1,
                                 pregunta_seguridad_2, respuesta_seguridad_2,
@@ -316,7 +311,6 @@ namespace SistemaBanco
                     nombreUsuario = dt.Rows[0]["nombre_completo"].ToString();
                     emailUsuario = dt.Rows[0]["email"].ToString();
 
-                    // Mostrar preguntas de seguridad
                     lblPregunta1.Text = dt.Rows[0]["pregunta_seguridad_1"].ToString();
                     respuestaCorrecta1 = dt.Rows[0]["respuesta_seguridad_1"].ToString().ToLower().Trim();
 
@@ -326,7 +320,6 @@ namespace SistemaBanco
                     lblPregunta3.Text = dt.Rows[0]["pregunta_seguridad_3"].ToString();
                     respuestaCorrecta3 = dt.Rows[0]["respuesta_seguridad_3"].ToString().ToLower().Trim();
 
-                    // Mostrar controles de preguntas
                     var lblPreguntasTitle = panelStep1.Controls[3] as Label;
                     if (lblPreguntasTitle != null) lblPreguntasTitle.Visible = true;
                     lblPregunta1.Visible = true;
@@ -339,7 +332,7 @@ namespace SistemaBanco
             }
             catch (Exception ex)
             {
-                // No mostrar error aquí, se validará al hacer clic en Continuar
+
             }
         }
 
@@ -356,7 +349,6 @@ namespace SistemaBanco
                 return;
             }
 
-            // Verificar si el usuario existe
             if (idUsuarioRecuperacion == 0)
             {
                 CustomMessageBox.Show("Usuario no registrado en el sistema",
@@ -366,7 +358,6 @@ namespace SistemaBanco
                 return;
             }
 
-            // Validar respuestas de seguridad
             string respuesta1 = txtRespuesta1.Text.ToLower().Trim();
             string respuesta2 = txtRespuesta2.Text.ToLower().Trim();
             string respuesta3 = txtRespuesta3.Text.ToLower().Trim();
@@ -387,7 +378,6 @@ namespace SistemaBanco
                 return;
             }
 
-            // Si todo es correcto, pasar al paso 2
             panelStep1.Visible = false;
             panelStep2.Visible = true;
         }
@@ -397,7 +387,6 @@ namespace SistemaBanco
             string nuevaPassword = txtNuevaPassword.Text;
             string confirmPassword = txtConfirmPassword.Text;
 
-            // Validar que no estén vacías
             if (string.IsNullOrWhiteSpace(nuevaPassword))
             {
                 CustomMessageBox.Show("Campo Requerido",
@@ -407,7 +396,6 @@ namespace SistemaBanco
                 return;
             }
 
-            // Validar longitud
             if (nuevaPassword.Length < 8 || nuevaPassword.Length > 20)
             {
                 CustomMessageBox.Show("La contraseña no cumple con todos los requisitos",
@@ -417,7 +405,6 @@ namespace SistemaBanco
                 return;
             }
 
-            // Validar complejidad
             bool tieneMayuscula = Regex.IsMatch(nuevaPassword, @"[A-Z]");
             bool tieneMinuscula = Regex.IsMatch(nuevaPassword, @"[a-z]");
             bool tieneNumero = Regex.IsMatch(nuevaPassword, @"[0-9]");
@@ -432,7 +419,6 @@ namespace SistemaBanco
                 return;
             }
 
-            // Validar que coincidan
             if (nuevaPassword != confirmPassword)
             {
                 CustomMessageBox.Show("Las contraseñas no coinciden",
@@ -444,19 +430,17 @@ namespace SistemaBanco
 
             try
             {
-                // Actualizar contraseña en la base de datos
+
                 string queryUpdate = "UPDATE usuarios SET contraseña = @pass WHERE id_usuario = @id";
                 Database.ExecuteNonQuery(queryUpdate,
                     new NpgsqlParameter("@pass", nuevaPassword),
                     new NpgsqlParameter("@id", idUsuarioRecuperacion));
 
-                // Intentar enviar correo de confirmación
                 if (EmailService.ConfiguracionValida())
                 {
                     EnviarCorreoConfirmacion(emailUsuario, nombreUsuario);
                 }
 
-                // Mostrar mensaje de éxito
                 CustomMessageBox.Show("La contraseña se ha actualizado correctamente",
                     $"Su contraseña ha sido restablecida exitosamente.\n\nSe ha enviado una confirmación a su correo electrónico: {emailUsuario}\n\nYa puede iniciar sesión con su nueva contraseña.",
                     MessageBoxIcon.Information);
@@ -516,7 +500,7 @@ namespace SistemaBanco
             }
             catch
             {
-                // Si falla el envío de correo, no afecta el proceso
+
             }
         }
     }
