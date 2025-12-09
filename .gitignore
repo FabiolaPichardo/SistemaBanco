@@ -361,3 +361,28 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Archivos de configuración con datos sensibles
+App.config
+
+# Archivos de prueba y diagnóstico temporales
+Test*.cs
+test_*.sql
+DIAGNOSTICO_*.sql
+VERIFICAR_*.sql
+
+# Documentación temporal de sesiones
+documentacion/SESION_*.md
+documentacion/RESUMEN_*.md
+documentacion/CAMBIOS_*.md
+documentacion/CORRECCIONES_*.md
+documentacion/DESPLIEGUE_*.md
+documentacion/PRUEBAS_*.md
+documentacion/README_*.md
+documentacion/USUARIOS_*.md
+documentacion/*_IMPLEMENTACION_*.md
+documentacion/*_IMPLEMENTACION_*.txt
+
+# Archivos de texto con código temporal
+*.txt
+!requirements.txt

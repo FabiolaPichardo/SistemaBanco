@@ -165,7 +165,7 @@ namespace SistemaBanco
                 Font = new System.Drawing.Font("Segoe UI", 10F),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
-            cmbRol.Items.AddRange(new string[] { "Cliente", "Empleado", "Gerente", "Administrador" });
+            cmbRol.Items.AddRange(new string[] { "Cliente", "Cajero", "Ejecutivo", "Gerente", "Administrador" });
             cmbRol.SelectedIndex = 0;
             yPos += 45;
 
