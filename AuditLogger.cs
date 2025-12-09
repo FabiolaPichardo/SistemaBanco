@@ -5,11 +5,19 @@ using Npgsql;
 
 namespace SistemaBanco
 {
-
+    /// <summary>
+    /// Clase estática que gestiona el sistema de auditoría del sistema bancario.
+    /// Registra todas las acciones importantes en base de datos y archivos de log.
+    /// Proporciona trazabilidad completa de operaciones para cumplimiento normativo.
+    /// </summary>
     public static class AuditLogger
     {
+        // Directorio donde se almacenan los archivos de log
         private static readonly string LogDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
 
+        /// <summary>
+        /// Enumeración de acciones auditables en el sistema.
+        /// </summary>
         public enum AuditAction
         {
             Login,
@@ -30,6 +38,9 @@ namespace SistemaBanco
             EliminacionUsuario
         }
 
+        /// <summary>
+        /// Niveles de severidad para los logs.
+        /// </summary>
         public enum LogLevel
         {
             INFO,
@@ -38,15 +49,27 @@ namespace SistemaBanco
             CRITICAL
         }
 
+        /// <summary>
+        /// Constructor estático que crea el directorio de logs si no existe.
+        /// </summary>
         static AuditLogger()
         {
-
             if (!Directory.Exists(LogDirectory))
             {
                 Directory.CreateDirectory(LogDirectory);
             }
         }
 
+        /// <summary>
+        /// Registra una acción en el sistema de auditoría.
+        /// Guarda el registro tanto en base de datos como en archivos de log.
+        /// </summary>
+        /// <param name="action">Tipo de acción realizada</param>
+        /// <param name="detalles">Detalles adicionales de la acción</param>
+        /// <param name="nivel">Nivel de severidad del log</param>
+        /// <param name="tipoMovimiento">Tipo de movimiento si aplica</param>
+        /// <param name="ipAddress">Dirección IP del usuario</param>
+        /// <param name="nombreEquipo">Nombre del equipo desde donde se realizó la acción</param>
         public static void Log(
             AuditAction action,
             string detalles = "",
@@ -203,12 +226,18 @@ namespace SistemaBanco
             }
         }
 
+        /// <summary>
+        /// Elimina logs antiguos tanto de archivos como de base de datos.
+        /// Útil para cumplir con políticas de retención de datos.
+        /// </summary>
+        /// <param name="diasRetencion">Número de días a retener los logs (por defecto 90)</param>
         public static void LimpiarLogsAntiguos(int diasRetencion = 90)
         {
             try
             {
                 DateTime fechaLimite = DateTime.Now.AddDays(-diasRetencion);
 
+                // Eliminar archivos de log antiguos
                 var archivos = Directory.GetFiles(LogDirectory, "*.log");
                 foreach (var archivo in archivos)
                 {
@@ -219,6 +248,7 @@ namespace SistemaBanco
                     }
                 }
 
+                // Eliminar registros antiguos de la base de datos
                 string query = "DELETE FROM auditoria_sistema WHERE fecha_hora < @fecha";
                 Database.ExecuteNonQuery(query, new NpgsqlParameter("@fecha", fechaLimite));
             }

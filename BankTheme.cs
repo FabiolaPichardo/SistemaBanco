@@ -4,9 +4,13 @@ using System.Windows.Forms;
 
 namespace SistemaBanco
 {
+    /// <summary>
+    /// Clase estática que define el tema visual corporativo del sistema bancario.
+    /// Proporciona colores, fuentes y métodos de estilizado consistentes para toda la aplicación.
+    /// </summary>
     public static class BankTheme
     {
-
+        // Paleta de colores corporativos
         public static readonly Color PrimaryBlue = Color.FromArgb(0, 51, 102);      // Azul oscuro corporativo
         public static readonly Color SecondaryBlue = Color.FromArgb(0, 102, 204);   // Azul medio
         public static readonly Color AccentGold = Color.FromArgb(212, 175, 55);     // Dorado elegante
@@ -19,6 +23,7 @@ namespace SistemaBanco
         public static readonly Color TextPrimary = Color.FromArgb(33, 37, 41);
         public static readonly Color TextSecondary = Color.FromArgb(108, 117, 125);
 
+        // Fuentes estandarizadas
         public static readonly Font TitleFont = new Font("Segoe UI", 18F, FontStyle.Bold);
         public static readonly Font SubtitleFont = new Font("Segoe UI", 14F, FontStyle.Bold);
         public static readonly Font HeaderFont = new Font("Segoe UI", 12F, FontStyle.Bold);
@@ -26,6 +31,11 @@ namespace SistemaBanco
         public static readonly Font SmallFont = new Font("Segoe UI", 9F, FontStyle.Regular);
         public static readonly Font MoneyFont = new Font("Segoe UI", 24F, FontStyle.Bold);
 
+        /// <summary>
+        /// Aplica el estilo corporativo a un botón.
+        /// </summary>
+        /// <param name="btn">Botón a estilizar</param>
+        /// <param name="isPrimary">True para estilo primario (azul), False para secundario (gris)</param>
         public static void StyleButton(Button btn, bool isPrimary = true)
         {
             btn.FlatStyle = FlatStyle.Flat;
@@ -46,6 +56,9 @@ namespace SistemaBanco
             }
         }
 
+        /// <summary>
+        /// Aplica el estilo corporativo a un cuadro de texto.
+        /// </summary>
         public static void StyleTextBox(TextBox txt)
         {
             txt.Font = BodyFont;
@@ -53,12 +66,25 @@ namespace SistemaBanco
             txt.BackColor = White;
         }
 
+        /// <summary>
+        /// Aplica el estilo corporativo a una etiqueta.
+        /// </summary>
+        /// <param name="lbl">Etiqueta a estilizar</param>
+        /// <param name="isTitle">True para estilo de título, False para texto normal</param>
         public static void StyleLabel(Label lbl, bool isTitle = false)
         {
             lbl.Font = isTitle ? TitleFont : BodyFont;
             lbl.ForeColor = isTitle ? PrimaryBlue : TextPrimary;
         }
 
+        /// <summary>
+        /// Crea un panel con estilo de tarjeta (card) con bordes suaves.
+        /// </summary>
+        /// <param name="x">Posición X</param>
+        /// <param name="y">Posición Y</param>
+        /// <param name="width">Ancho</param>
+        /// <param name="height">Alto</param>
+        /// <returns>Panel estilizado como tarjeta</returns>
         public static Panel CreateCard(int x, int y, int width, int height)
         {
             Panel card = new Panel

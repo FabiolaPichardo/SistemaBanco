@@ -4,13 +4,26 @@ using System.Windows.Forms;
 
 namespace SistemaBanco
 {
+    /// <summary>
+    /// Cuadro de mensaje personalizado con el tema corporativo del banco.
+    /// Reemplaza el MessageBox estándar de Windows con un diseño más profesional.
+    /// </summary>
     public class CustomMessageBox : Form
     {
+        /// <summary>
+        /// Constructor que inicializa el cuadro de mensaje personalizado.
+        /// </summary>
+        /// <param name="titulo">Título del mensaje</param>
+        /// <param name="mensaje">Contenido del mensaje</param>
+        /// <param name="icon">Icono a mostrar (Error, Warning, Information)</param>
         public CustomMessageBox(string titulo, string mensaje, MessageBoxIcon icon)
         {
             InitializeComponent(titulo, mensaje, icon);
         }
 
+        /// <summary>
+        /// Inicializa los componentes visuales del cuadro de mensaje.
+        /// </summary>
         private void InitializeComponent(string titulo, string mensaje, MessageBoxIcon icon)
         {
             this.Text = "";
@@ -111,6 +124,12 @@ namespace SistemaBanco
             this.Controls.Add(borderPanel);
         }
 
+        /// <summary>
+        /// Muestra un cuadro de mensaje personalizado de forma modal.
+        /// </summary>
+        /// <param name="titulo">Título del mensaje</param>
+        /// <param name="mensaje">Contenido del mensaje</param>
+        /// <param name="icon">Icono a mostrar (por defecto Information)</param>
         public static void Show(string titulo, string mensaje, MessageBoxIcon icon = MessageBoxIcon.Information)
         {
             using (CustomMessageBox msgBox = new CustomMessageBox(titulo, mensaje, icon))

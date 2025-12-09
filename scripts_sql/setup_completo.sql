@@ -1,6 +1,6 @@
 -- ============================================
--- MÓDULO BANCO - SETUP COMPLETO DE BASE DE DATOS
--- Ejecutar este script en PostgreSQL para crear toda la estructura
+-- MÓDULO BANCO - BASE DE DATOS
+-- Estructuta creada con PostgreSQL 
 -- ============================================
 
 -- ============================================
